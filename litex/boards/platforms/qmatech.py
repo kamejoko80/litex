@@ -56,7 +56,7 @@ _io = [
 
     ("i2c", 0,
         Subsignal("sclk", Pins("AA13")),
-        Subsignal("sdat", Pins("AB14")),
+        Subsignal("sdat", Pins("AA14")),
         IOStandard("3.3-V LVTTL")
     ),
 
