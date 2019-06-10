@@ -7,6 +7,7 @@ from migen import *
 from litex.boards.platforms import qmatech
 
 from litex.soc.integration.soc_sdram import *
+from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
 
 from litedram.modules import IS42S16160
@@ -87,22 +88,17 @@ class _CRG(Module):
 
 # BaseSoC ------------------------------------------------------------------------------------------
 
-class BaseSoC(SoCSDRAM):
+class BaseSoC(SoCCore):
     def __init__(self, sys_clk_freq=int(50e6), **kwargs):
         assert sys_clk_freq == int(50e6)
         platform = qmatech.Platform()
-        SoCSDRAM.__init__(self, platform, clk_freq=sys_clk_freq,
-                          integrated_rom_size=0x8000,
-                          **kwargs)
-
+        SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
+                         with_uart=True,
+                         integrated_rom_size=0x8000,
+                         integrated_main_ram_size=0x1000,
+                         **kwargs)
+        
         self.submodules.crg = _CRG(platform)
-
-        if not self.integrated_main_ram_size:
-            self.submodules.sdrphy = GENSDRPHY(platform.request("sdram"))
-            sdram_module = IS42S16160(self.clk_freq, "1:1")
-            self.register_sdram(self.sdrphy,
-                                sdram_module.geom_settings,
-                                sdram_module.timing_settings)
 
 # Build --------------------------------------------------------------------------------------------
 
