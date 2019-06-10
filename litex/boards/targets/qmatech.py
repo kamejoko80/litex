@@ -59,33 +59,6 @@ class _CRG(Module):
                 i_PLLENA=1,
             )
 
-        #    Instance("cycloneive_pll",
-        #        p_BANDWIDTH_TYPE="AUTO",
-        #        p_CLK0_DIVIDE_BY=1,
-        #        p_CLK0_DUTY_CYCLE=50e0,
-        #        p_CLK0_MULTIPLY_BY=1,
-        #        p_CLK0_PHASE_SHIFT="-3000",
-        #        p_COMPENSATE_CLOCK="CLK0",
-        #        p_INCLK0_INPUT_FREQUENCY=20000e0,
-        #        p_OPERATION_MODE="NORMAL",
-        #        p_PLL_TYPE="AUTO",
-        #        p_LPM_TYPE="cycloneive_pll",
-        #        p_CLKSWITCH=0,
-        #        p_CONFIGUPDATE=0,
-        #        p_PFDENA=1,
-        #        p_PHASECOUNTERSELECT=0,
-        #        p_PHASESTEP=0,
-        #        p_PHASEUPDOWN=0,
-        #        p_SCANCLK=0,
-        #        p_SCANCLKENA=1,
-        #        p_SCANDATA=0,
-        #        i_INCLK=clk50,
-        #        o_CLK=self.cd_sys_ps.clk,
-        #        i_ARESET=~rst_n,
-        #    )
-
-        self.comb += platform.request("sdram_clock").eq(self.cd_sys_ps.clk)
-
 # BaseSoC ------------------------------------------------------------------------------------------
 
 class BaseSoC(SoCCore):
