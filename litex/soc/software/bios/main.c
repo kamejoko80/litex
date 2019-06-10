@@ -20,6 +20,16 @@
 
 /* General address space functions */
 
+#ifdef GPIO_ISR_INTERRUPT
+void gpio_isr_init(void);
+void gpio_isr_init(void) 
+{  
+  gpio_isr_ev_pending_write(gpio_isr_ev_pending_read());
+  gpio_isr_ev_enable_write(1);
+  irq_setmask(irq_getmask() | (1 << GPIO_ISR_INTERRUPT)); 
+}
+#endif
+
 #define NUMBER_OF_BYTES_ON_A_LINE 16
 static void dump_bytes(unsigned int *ptr, int count, unsigned long addr)
 {
@@ -390,6 +400,10 @@ int main(int i, char **c)
 	irq_setmask(0);
 	irq_setie(1);
 	uart_init();
+
+#ifdef GPIO_ISR_INTERRUPT 
+    gpio_isr_init();
+#endif
 
 	printf("\n");
 	printf("\e[1m        __   _ __      _  __\e[0m\n");

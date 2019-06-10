@@ -44,14 +44,43 @@ void isr(void)
 	}
 }
 #else
+    
+#ifdef GPIO_ISR_INTERRUPT
+void gpio_isr_interrupt(void); 
+void gpio_isr_interrupt(void) 
+{
+  unsigned int status;
+
+  status = gpio_isr_ev_pending_read(); // you don't need to do this if you just have one interrupt source
+  
+  // gpio_isr_ev_pending_write(1);     // You'd do this if you just had one interrupt
+
+  if( status & 1 ) {
+    printf("Hi! I got interrupt 1\n");
+    gpio_isr_ev_pending_write(1);    // clear the interrupt so it doesn't keep on firing and wedge the CPU
+  } else if( status & 2 ) {
+    printf("Hi! I got interrupt 2\n");
+    gpio_isr_ev_pending_write(2);
+  }
+
+  gpio_isr_ev_enable_write(1);  // re-enable the event handler so we can catch the interrupt again
+}
+#endif
+
 void isr(void);
 void isr(void)
 {
-	unsigned int irqs;
+    unsigned int irqs;
 
-	irqs = irq_pending() & irq_getmask();
+    irqs = irq_pending() & irq_getmask();
 
-	if(irqs & (1 << UART_INTERRUPT))
-		uart_isr();
+    if(irqs & (1 << UART_INTERRUPT))
+        uart_isr();
+
+#ifdef GPIO_ISR_INTERRUPT
+    if(irqs & (1 << GPIO_ISR_INTERRUPT))
+        gpio_isr_interrupt();
+#endif
+
 }
 #endif
