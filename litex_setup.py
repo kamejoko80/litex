@@ -10,7 +10,7 @@ current_path = os.path.dirname(os.path.realpath(__file__))
 # name,  (url, recursive clone, develop)
 repos = [
     ("migen",      ("http://github.com/m-labs/",        True,  True)),
-    ("litex -b experiment", ("http://github.com/kamejoko80/", True,  True)),
+    ("litex",      ("http://github.com/kamejoko80/",    True,  True)),
     ("liteeth",    ("http://github.com/enjoy-digital/", False, True)),
     ("liteusb",    ("http://github.com/enjoy-digital/", False, True)),
     ("litedram",   ("http://github.com/enjoy-digital/", False, True)),
@@ -37,7 +37,8 @@ if "init" in sys.argv[1:]:
         print("[cloning " + name + "]...")
         full_url = url + name
         opts = "--recursive" if need_recursive else ""
-        os.system("git clone " + full_url + " " + opts)
+        branch = "-b experiment" if name in ["litex"] else ""
+        os.system("git clone " + full_url + " " + opts + " " + branch)
 
 if "install" in sys.argv[1:]:
     for name in repos.keys():
