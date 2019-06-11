@@ -30,6 +30,39 @@ void gpio_isr_init(void)
 }
 #endif
 
+#ifdef CSR_ADDER8_BASE
+static void adder8(char *op1, char *op2)
+{
+	char *c;
+	unsigned char opr1;
+	unsigned char opr2;
+
+	if((*op1 == 0) || (*op1 == 0)) {
+		printf("adder8 <op1> <op2>\n");
+		return;
+	}
+
+	opr1 = strtoul(op1, &c, 0);
+	if(*c != 0) {
+		printf("incorrect op1 value\n");
+		return;
+	}
+    
+	opr2 = strtoul(op2, &c, 0);
+	if(*c != 0) {
+		printf("incorrect op2 value\n");
+		return;
+	} 
+
+    adder8_op1_write(opr1);
+    adder8_op2_write(opr2);
+    adder8_ena_write(1);
+    printf("sum = %d\n", adder8_sum_read());
+    adder8_ena_write(0);
+}
+#endif
+
+
 #define NUMBER_OF_BYTES_ON_A_LINE 16
 static void dump_bytes(unsigned int *ptr, int count, unsigned long addr)
 {
@@ -208,6 +241,9 @@ static void help(void)
 	puts("crc        - compute CRC32 of a part of the address space");
 	puts("ident      - display identifier");
 	puts("");
+#ifdef CSR_ADDER8_BASE
+    puts("adder8     - Adder 8bit demo");
+#endif    
 #ifdef CSR_CTRL_BASE
 	puts("reboot     - reset processor");
 #endif
@@ -261,7 +297,9 @@ static void do_command(char *c)
 	else if(strcmp(token, "mc") == 0) mc(get_token(&c), get_token(&c), get_token(&c));
 	else if(strcmp(token, "crc") == 0) crc(get_token(&c), get_token(&c));
 	else if(strcmp(token, "ident") == 0) ident();
-
+#ifdef CSR_ADDER8_BASE
+    else if(strcmp(token, "adder8") == 0) adder8(get_token(&c), get_token(&c));
+#endif       
 #ifdef L2_SIZE
 	else if(strcmp(token, "flushl2") == 0) flush_l2_cache();
 #endif
