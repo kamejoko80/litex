@@ -13,7 +13,7 @@ _io = [
     ("led0", 0, Pins("E4"), IOStandard("3.3-V LVTTL")),
 
     ("user_led", 0, Pins("AA15"), IOStandard("3.3-V LVTTL")),
-    ("user_led", 1, Pins("AB15"), IOStandard("3.3-V LVTTL")),
+  # ("user_led", 1, Pins("AB15"), IOStandard("3.3-V LVTTL")),
     ("user_led", 2, Pins("AA16"), IOStandard("3.3-V LVTTL")),
     ("user_led", 3, Pins("AB16"), IOStandard("3.3-V LVTTL")),
     ("user_led", 4, Pins("AA17"), IOStandard("3.3-V LVTTL")),
@@ -33,6 +33,8 @@ _io = [
         Subsignal("tx", Pins("AB14"), IOStandard("3.3-V LVTTL")),
         Subsignal("rx", Pins("AB13"), IOStandard("3.3-V LVTTL"))
     ),
+
+    ("MyUart", 0, Pins("AB15"), IOStandard("3.3-V LVTTL")),
 
     ("sdram_clock", 0, Pins("Y6"), IOStandard("3.3-V LVTTL")),
     ("sdram", 0,

@@ -62,6 +62,25 @@ static void adder8(char *op1, char *op2)
 }
 #endif
 
+#ifdef CSR_MY_UART_BASE
+static void my_uart_put_char(char c)
+{
+    while(my_uart_tx_bsy_read());
+    my_uart_tx_dat_write((unsigned char)c);
+    my_uart_tx_ena_write(1);
+    my_uart_tx_ena_write(0);
+}
+
+static void my_uart_print(char *message)
+{
+    int i;
+    
+    for(i=0; i<strlen(message); i++)
+    {
+        my_uart_put_char(message[i]);
+    }
+}
+#endif
 
 #define NUMBER_OF_BYTES_ON_A_LINE 16
 static void dump_bytes(unsigned int *ptr, int count, unsigned long addr)
@@ -261,6 +280,7 @@ static void help(void)
 #ifdef CSR_SDRAM_BASE
 	puts("memtest    - run a memory test");
 #endif
+
 }
 
 static char *get_token(char **str)
@@ -508,6 +528,11 @@ int main(int i, char **c)
 	}
 
 	printf("--============= \e[1mConsole\e[0m ================--\n");
+    
+#ifdef CSR_MY_UART_BASE
+    my_uart_print("HELLO RISC_V\r\n");
+#endif    
+
 	while(1) {
 		putsnonl("\e[1mBIOS>\e[0m ");
 		readstr(buffer, 64);
