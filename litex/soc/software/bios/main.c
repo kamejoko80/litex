@@ -82,6 +82,19 @@ static void my_uart_print(char *message)
 }
 #endif
 
+#ifdef CAN_CTRL_BASE
+static void canregs(void)
+{
+    int i;
+    unsigned int *reg = (unsigned int*)CAN_CTRL_BASE;
+    for(i = 0; i < 32; i++)
+    {
+        printf("Reg %u : %X h\n", i, *reg);
+        reg++;
+    }
+}
+#endif
+
 #define NUMBER_OF_BYTES_ON_A_LINE 16
 static void dump_bytes(unsigned int *ptr, int count, unsigned long addr)
 {
@@ -148,6 +161,34 @@ static void mr(char *startaddr, char *len)
 	dump_bytes(addr, length, (unsigned long)addr);
 }
 
+static void mrb(char *startaddr, char *len)
+{
+	char *c;
+	unsigned int *addr;
+	unsigned int length;
+
+	if(*startaddr == 0) {
+		printf("mr <address> [length]\n");
+		return;
+	}
+	addr = (unsigned *)strtoul(startaddr, &c, 0);
+	if(*c != 0) {
+		printf("incorrect address\n");
+		return;
+	}
+	if(*len == 0) {
+		length = 4;
+	} else {
+		length = strtoul(len, &c, 0);
+		if(*c != 0) {
+			printf("incorrect length\n");
+			return;
+		}
+	}
+
+	dump_bytes(addr, length, (unsigned long)addr);
+}
+
 static void mw(char *addr, char *value, char *count)
 {
 	char *c;
@@ -180,6 +221,40 @@ static void mw(char *addr, char *value, char *count)
 		}
 	}
 	for (i=0;i<count2;i++) *addr2++ = value2;
+}
+
+static void mwb(char *addr, char *value, char *count)
+{
+	char *c;
+	unsigned char *addr2;
+	unsigned int value2;
+	unsigned int count2;
+	unsigned int i;
+
+	if((*addr == 0) || (*value == 0)) {
+		printf("mw <address> <value> [count]\n");
+		return;
+	}
+	addr2 = (unsigned char *)strtoul(addr, &c, 0);
+	if(*c != 0) {
+		printf("incorrect address\n");
+		return;
+	}
+	value2 = strtoul(value, &c, 0);
+	if(*c != 0) {
+		printf("incorrect value\n");
+		return;
+	}
+	if(*count == 0) {
+		count2 = 1;
+	} else {
+		count2 = strtoul(count, &c, 0);
+		if(*c != 0) {
+			printf("incorrect count\n");
+			return;
+		}
+	}
+	for (i=0;i<count2;i++) *addr2++ = (char)value2;
 }
 
 static void mc(char *dstaddr, char *srcaddr, char *count)
@@ -254,12 +329,17 @@ static void help(void)
 {
 	puts("LiteX BIOS, available commands:");
 	puts("mr         - read address space");
+    puts("mrb        - readb address space");
 	puts("mw         - write address space");
+	puts("mwb        - writeb address space");    
 	puts("mc         - copy address space");
 	puts("");
 	puts("crc        - compute CRC32 of a part of the address space");
 	puts("ident      - display identifier");
 	puts("");
+#ifdef CAN_CTRL_BASE
+    puts("canregs    - dump can controller registers");
+#endif    
 #ifdef CSR_ADDER8_BASE
     puts("adder8     - Adder 8bit demo");
 #endif    
@@ -280,7 +360,6 @@ static void help(void)
 #ifdef CSR_SDRAM_BASE
 	puts("memtest    - run a memory test");
 #endif
-
 }
 
 static char *get_token(char **str)
@@ -313,12 +392,17 @@ static void do_command(char *c)
 	token = get_token(&c);
 
 	if(strcmp(token, "mr") == 0) mr(get_token(&c), get_token(&c));
+	else if(strcmp(token, "mrb") == 0) mrb(get_token(&c), get_token(&c));
 	else if(strcmp(token, "mw") == 0) mw(get_token(&c), get_token(&c), get_token(&c));
+	else if(strcmp(token, "mwb") == 0) mwb(get_token(&c), get_token(&c), get_token(&c));
 	else if(strcmp(token, "mc") == 0) mc(get_token(&c), get_token(&c), get_token(&c));
 	else if(strcmp(token, "crc") == 0) crc(get_token(&c), get_token(&c));
 	else if(strcmp(token, "ident") == 0) ident();
+#ifdef CAN_CTRL_BASE
+	else if(strcmp(token, "canregs") == 0) canregs();
+#endif    
 #ifdef CSR_ADDER8_BASE
-    else if(strcmp(token, "adder8") == 0) adder8(get_token(&c), get_token(&c));
+	else if(strcmp(token, "adder8") == 0) adder8(get_token(&c), get_token(&c));
 #endif       
 #ifdef L2_SIZE
 	else if(strcmp(token, "flushl2") == 0) flush_l2_cache();
