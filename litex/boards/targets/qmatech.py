@@ -26,6 +26,7 @@ from litedram.phy import GENSDRPHY
 class _CRG(Module):
     def __init__(self, platform):
         self.clock_domains.cd_sys = ClockDomain()
+        self.clock_domains.cd_can = ClockDomain()
         self.clock_domains.cd_por = ClockDomain(reset_less=True)
 
         # clock source request
@@ -33,6 +34,7 @@ class _CRG(Module):
 
         ###
         self.cd_sys.clk.attr.add("keep")
+        self.cd_can.clk.attr.add("keep")
         self.cd_por.clk.attr.add("keep")
 
         # power on rst
@@ -43,7 +45,7 @@ class _CRG(Module):
             self.cd_sys.rst.eq(~rst_n),
         ]
 
-        # pll setting
+        # sys_clk pll setting (target 100MHz)
         self.specials += \
             Instance("ALTPLL",
                 p_BANDWIDTH_TYPE="AUTO",
@@ -56,6 +58,27 @@ class _CRG(Module):
                 p_OPERATION_MODE="NORMAL",
                 i_INCLK=clk50,
                 o_CLK=self.cd_sys.clk,
+                i_ARESET=~rst_n,
+                i_CLKENA=0x3f,
+                i_EXTCLKENA=0xf,
+                i_FBIN=1,
+                i_PFDENA=1,
+                i_PLLENA=1,
+            )
+
+        # can_clk pll setting (target 24MHz)
+        self.specials += \
+            Instance("ALTPLL",
+                p_BANDWIDTH_TYPE="AUTO",
+                p_CLK0_DIVIDE_BY=25,
+                p_CLK0_DUTY_CYCLE=50e0,
+                p_CLK0_MULTIPLY_BY=12,
+                p_CLK0_PHASE_SHIFT="0",
+                p_COMPENSATE_CLOCK="CLK0",
+                p_INCLK0_INPUT_FREQUENCY=20000e0,
+                p_OPERATION_MODE="NORMAL",
+                i_INCLK=clk50,
+                o_CLK=self.cd_can.clk,
                 i_ARESET=~rst_n,
                 i_CLKENA=0x3f,
                 i_EXTCLKENA=0xf,

@@ -17,6 +17,7 @@
 
 #include "sdram.h"
 #include "boot.h"
+#include "can.h"
 
 /* General address space functions */
 
@@ -545,6 +546,10 @@ int main(int i, char **c)
 
 #ifdef GPIO_ISR_INTERRUPT 
     gpio_isr_init();
+#endif
+
+#ifdef CAN_CTRL_BASE
+    sja1000_init();
 #endif
 
 	printf("\n");
