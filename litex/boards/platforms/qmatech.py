@@ -14,11 +14,11 @@ _io = [
 
     ("user_led", 0, Pins("AA15"), IOStandard("3.3-V LVTTL")),
   # ("user_led", 1, Pins("AB15"), IOStandard("3.3-V LVTTL")),
-    ("user_led", 2, Pins("AA16"), IOStandard("3.3-V LVTTL")),
-    ("user_led", 3, Pins("AB16"), IOStandard("3.3-V LVTTL")),
-    ("user_led", 4, Pins("AA17"), IOStandard("3.3-V LVTTL")),
-    ("user_led", 5, Pins("AB17"), IOStandard("3.3-V LVTTL")),
-    ("user_led", 6, Pins("AA18"), IOStandard("3.3-V LVTTL")),
+  # ("user_led", 2, Pins("AA16"), IOStandard("3.3-V LVTTL")),
+  # ("user_led", 3, Pins("AB16"), IOStandard("3.3-V LVTTL")),
+  # ("user_led", 4, Pins("AA17"), IOStandard("3.3-V LVTTL")),
+  # ("user_led", 5, Pins("AB17"), IOStandard("3.3-V LVTTL")),
+  # ("user_led", 6, Pins("AA18"), IOStandard("3.3-V LVTTL")),
     ("user_led", 7, Pins("AB18"), IOStandard("3.3-V LVTTL")),
 
     ("key", 0, Pins("W13"), IOStandard("3.3-V LVTTL")),
@@ -34,8 +34,16 @@ _io = [
         Subsignal("rx", Pins("AB13"), IOStandard("3.3-V LVTTL"))
     ),
 
-    ("MyUart", 0, Pins("AB15"), IOStandard("3.3-V LVTTL")),
-
+    ("MyUart", 0, Pins("AB15"), IOStandard("3.3-V LVTTL")),    
+    
+    ("canif", 0,
+        Subsignal("tx", Pins("AA16"), IOStandard("3.3-V LVTTL")),
+        Subsignal("rx", Pins("AB16"), IOStandard("3.3-V LVTTL")),
+        Subsignal("boo", Pins("AA17"), IOStandard("3.3-V LVTTL")),
+        Subsignal("irq", Pins("AB17"), IOStandard("3.3-V LVTTL")),
+        Subsignal("clkout", Pins("AA18"), IOStandard("3.3-V LVTTL"))
+    ),
+   
     ("sdram_clock", 0, Pins("Y6"), IOStandard("3.3-V LVTTL")),
     ("sdram", 0,
         Subsignal("a", Pins("V2 V1 U2 U1 V3 V4 Y2 AA1 Y3 V5 W1 Y4 V6")),
