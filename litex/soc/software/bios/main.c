@@ -94,6 +94,77 @@ static void canregs(void)
         reg++;
     }
 }
+
+static void basic_can_test(void)
+{
+    // Enter reset mode
+    MOD = (1 << RM) | ( 1<< AFM);
+ 
+    // Set Acceptance Code and Acceptance Mask registers
+    ACR = 0x28; // acceptance code
+    AMR = 0xff; // acceptance mask
+
+    // Switch-off reset mode
+    MOD = 0x1e;  // reset_off, all irqs enabled.
+     
+    TX_DATA_0 = 0x55; // Writing ID[10:3] = 0x55
+    TX_DATA_1 = 0x77; // Writing ID[2:0] = 0x3, rtr = 1, length = 7
+    TX_DATA_2 = 0x00; // data byte 1
+    TX_DATA_3 = 0x00; // data byte 2
+    TX_DATA_4 = 0x00; // data byte 3
+    TX_DATA_5 = 0x00; // data byte 4
+    TX_DATA_6 = 0x00; // data byte 5
+    TX_DATA_7 = 0x00; // data byte 6
+    TX_DATA_8 = 0x00; // data byte 7
+    TX_DATA_9 = 0x00; // data byte 8
+
+    // send buffer
+	CMR = 1 << TR;
+    
+    // wait for transmit complete
+    while(SR & TS);
+    
+    printf("Can sent\r\n");
+}
+
+static void can_transmit_demo(void)
+{ 
+
+#if 0
+    basic_can_test();
+#else 
+	// Create a test messsage
+	can_t msg;
+	_Bool status = false;
+    
+	msg.id = 0x123456;
+	msg.flags.rtr = 0;
+	msg.flags.extended = 1;
+	
+	msg.length = 4;
+	msg.data[0] = 0xde;
+	msg.data[1] = 0xad;
+	msg.data[2] = 0xbe;
+	msg.data[3] = 0xef;
+	
+    // Init can
+    sja1000_init();
+    
+    // Send the message    
+    for(int i = 0; i < 50; i++)
+    {
+        status = sja1000_send_message(&msg);
+        
+        if(status == false)
+        {
+            printf("Can send failed\r\n");
+            return;
+        }
+    }
+    
+    printf("Can send sucessfully\r\n");
+#endif
+}
 #endif
 
 #define NUMBER_OF_BYTES_ON_A_LINE 16
@@ -340,6 +411,7 @@ static void help(void)
 	puts("");
 #ifdef CAN_CTRL_BASE
     puts("canregs    - dump can controller registers");
+    puts("candemo    - run sja1000 can demo");
 #endif    
 #ifdef CSR_ADDER8_BASE
     puts("adder8     - Adder 8bit demo");
@@ -401,6 +473,7 @@ static void do_command(char *c)
 	else if(strcmp(token, "ident") == 0) ident();
 #ifdef CAN_CTRL_BASE
 	else if(strcmp(token, "canregs") == 0) canregs();
+	else if(strcmp(token, "candemo") == 0) can_transmit_demo();    
 #endif    
 #ifdef CSR_ADDER8_BASE
 	else if(strcmp(token, "adder8") == 0) adder8(get_token(&c), get_token(&c));
@@ -546,10 +619,6 @@ int main(int i, char **c)
 
 #ifdef GPIO_ISR_INTERRUPT 
     gpio_isr_init();
-#endif
-
-#ifdef CAN_CTRL_BASE
-    sja1000_init();
 #endif
 
 	printf("\n");
