@@ -130,13 +130,24 @@ static void basic_can_test(void)
 static void can_transmit_demo(void)
 { 
 
-#if 0
-    basic_can_test();
+#if 1
+   for(int i = 1; i < 50; i++) 
+   {    
+     basic_can_test();
+   }
 #else 
+
+    can_t msg; 
 	// Create a test messsage
-	can_t msg;
 	_Bool status = false;
-    
+   
+    // Init can
+    sja1000_init();
+   
+   for(int i = 1; i < 50; i++)
+   {  
+    status = false;
+ 
 	msg.id = 0x123456;
 	msg.flags.rtr = 0;
 	msg.flags.extended = 1;
@@ -146,10 +157,7 @@ static void can_transmit_demo(void)
 	msg.data[1] = 0xad;
 	msg.data[2] = 0xbe;
 	msg.data[3] = 0xef;
-	
-    // Init can
-    sja1000_init();
-    
+	   
     // Send the message    
     for(int i = 0; i < 50; i++)
     {
@@ -163,6 +171,9 @@ static void can_transmit_demo(void)
     }
     
     printf("Can send sucessfully\r\n");
+    
+   }
+
 #endif
 }
 #endif

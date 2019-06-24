@@ -34,8 +34,8 @@ _io = [
         Subsignal("rx", Pins("AB13"), IOStandard("3.3-V LVTTL"))
     ),
 
-    ("MyUart", 0, Pins("AB15"), IOStandard("3.3-V LVTTL")),    
-    
+    ("MyUart", 0, Pins("AB15"), IOStandard("3.3-V LVTTL")),
+
     ("canif", 0,
         Subsignal("tx", Pins("AA16"), IOStandard("3.3-V LVTTL")),
         Subsignal("rx", Pins("AB16"), IOStandard("3.3-V LVTTL")),
@@ -43,7 +43,7 @@ _io = [
         Subsignal("irq", Pins("AB17"), IOStandard("3.3-V LVTTL")),
         Subsignal("clkout", Pins("AA18"), IOStandard("3.3-V LVTTL"))
     ),
-   
+
     ("sdram_clock", 0, Pins("Y6"), IOStandard("3.3-V LVTTL")),
     ("sdram", 0,
         Subsignal("a", Pins("V2 V1 U2 U1 V3 V4 Y2 AA1 Y3 V5 W1 Y4 V6")),
