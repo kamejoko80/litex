@@ -21,13 +21,14 @@ void sja1000_init(void)
 {
     // Enter reset mode
     MOD = (1 << RM) | ( 1<< AFM);
+    while((MOD & (1 << RM)) == 0);
     
     // Choose PeliCAN-Mode
 	CDR = (1 << CANMODE) | 0x07;
     
 	// Select the bitrate configuration
-    BTR0 = 0xC1;
-    BTR1 = 0x60;
+    BTR0 = 0x09;
+    BTR1 = 0x2F;
     
 	// Filter are not practical useable, so we disable them
     AMR0 = 0xFF;
@@ -40,14 +41,15 @@ void sja1000_init(void)
 	
 	// Leave reset-mode
 	MOD = (1 << AFM);
+    while((MOD & (1 << RM)) != 0);
 }
 
 void sja1000_set_mode(can_mode_t mode)
 {
 	uint8_t reg = 0;
 	
-	// Enter reset mode
-	MOD = (1 << AFM) | ( 1 << RM);
+	// Enter reset mode, enable self test mode
+	MOD = (1 << AFM) | ( 1 << RM) | ( 1 << STM);
 	
 	if (mode == LISTEN_ONLY_MODE) 
     {
@@ -172,6 +174,16 @@ _Bool sja1000_get_message(can_t *msg)
 	return true;
 }
 
+static void delay(uint32_t n)
+{
+    uint32_t i, j;
+    
+    for(i=1; i<=n;i++)
+    {
+        for(j=0;j<100000;j++);
+    }
+}
+
 _Bool sja1000_send_message(const can_t *msg)
 {
 	uint8_t frame_info;
@@ -222,6 +234,13 @@ _Bool sja1000_send_message(const can_t *msg)
 	// send buffer
 	CMR = 1 << TR;
 	
+    // Waitfor trasmit complete
+    while((SR & (1<<TCS))==0)
+    {
+        printf("SR=%X\r\n");
+        delay(1000);
+    }
+    
 	//CAN_INDICATE_TX_TRAFFIC_FUNCTION;
 	
 	return true;

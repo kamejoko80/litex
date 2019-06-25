@@ -95,86 +95,109 @@ static void canregs(void)
     }
 }
 
-static void basic_can_test(void)
+static void delay(uint32_t n)
 {
-    // Enter reset mode
-    MOD = (1 << RM) | ( 1<< AFM);
+    uint32_t i, j;
+    
+    for(i=1; i<=n;i++)
+    {
+        for(j=0;j<100000;j++);
+    }
+}
+
+static void basic_can_self_test_init(void)
+{
+    // Enter reset mode, enable self test mode
+    MOD = (1 << RM) | ( 1<< AFM) | ( 1 << STM);
+ 
+    // Can baudrate setting
+    BTR0 = 0x09;  
+    BTR1 = 0x2F;
+ 
+    // Clear TX, RX error counter
+    EWL = 0xFF;
+    RXERR = 0x00;    
+    TXERR = 0x00;
  
     // Set Acceptance Code and Acceptance Mask registers
-    ACR = 0x28; // acceptance code
-    AMR = 0xff; // acceptance mask
+    ACR = 0xFF; // acceptance code
+    AMR = 0xFF; // acceptance mask
 
     // Switch-off reset mode
-    MOD = 0x1e;  // reset_off, all irqs enabled.
-     
+    MOD &= ~(1 << RM);  // reset_off, all irqs enabled.   
+}
+
+static void basic_can_clr_tx_rx_error(void)
+{
+    // Enter reset mode
+    MOD |= (1 << RM);
+   
+    // Clear TX, RX error counter
+    EWL = 0xFF;
+    RXERR = 0x00;    
+    TXERR = 0x00;   
+   
+    // Switch-off reset mode
+    MOD &= ~(1 << RM);
+}
+
+static void basic_can_self_test(void)
+{   
+    static uint32_t timeout; 
+    
+    basic_can_self_test_init();
+    
+    /* Wait for transmit buffer ready */   
+    while((SR & (1 << TBS))==0);
+    
     TX_DATA_0 = 0x55; // Writing ID[10:3] = 0x55
-    TX_DATA_1 = 0x77; // Writing ID[2:0] = 0x3, rtr = 1, length = 7
-    TX_DATA_2 = 0x00; // data byte 1
-    TX_DATA_3 = 0x00; // data byte 2
-    TX_DATA_4 = 0x00; // data byte 3
-    TX_DATA_5 = 0x00; // data byte 4
-    TX_DATA_6 = 0x00; // data byte 5
-    TX_DATA_7 = 0x00; // data byte 6
-    TX_DATA_8 = 0x00; // data byte 7
+    TX_DATA_1 = 0x67; // Writing ID[2:0] = 0x3, rtr = 0, length = 7
+    TX_DATA_2 = 0xAA; // data byte 1
+    TX_DATA_3 = 0xAA; // data byte 2
+    TX_DATA_4 = 0xAA; // data byte 3
+    TX_DATA_5 = 0xAA; // data byte 4
+    TX_DATA_6 = 0xAA; // data byte 5
+    TX_DATA_7 = 0xAA; // data byte 6
+    TX_DATA_8 = 0xAA; // data byte 7
     TX_DATA_9 = 0x00; // data byte 8
 
-    // send buffer
-	CMR = 1 << TR;
+    // Transmit, receive request
+	CMR = (1 << SRR) | (1 << AT) | (1 << TR); 
+
+    // Wait for trasmition complete
+    timeout = 0;
+    while((SR & (1<<TCS))==0)
+    {
+        printf("SR=%X\r\n", SR);
+        delay(10000);
+        timeout++;
+        if(timeout >= 50)
+        {
+            printf("Error trasmit timeout\r\n");
+            printf("EWL   = %X\r\n", EWL);
+            printf("RXERR = %X\r\n", RXERR);
+            printf("TXERR = %X\r\n", TXERR);
+            basic_can_clr_tx_rx_error();
+            return;
+        }
+    }
     
-    // wait for transmit complete
-    while(SR & TS);
-    
-    printf("Can sent\r\n");
+    if(SR & (1<<RS))
+    {
+        printf("Message receive\r\n");
+        CMR = (1 << CDO) | (1 << RRB);
+    }
 }
 
 static void can_transmit_demo(void)
 { 
 
-#if 1
-   for(int i = 1; i < 50; i++) 
+   for(int i = 1; i < 10; i++) 
    {    
-     basic_can_test();
+     basic_can_self_test();
    }
-#else 
-
-    can_t msg; 
-	// Create a test messsage
-	_Bool status = false;
    
-    // Init can
-    sja1000_init();
-   
-   for(int i = 1; i < 50; i++)
-   {  
-    status = false;
- 
-	msg.id = 0x123456;
-	msg.flags.rtr = 0;
-	msg.flags.extended = 1;
-	
-	msg.length = 4;
-	msg.data[0] = 0xde;
-	msg.data[1] = 0xad;
-	msg.data[2] = 0xbe;
-	msg.data[3] = 0xef;
-	   
-    // Send the message    
-    for(int i = 0; i < 50; i++)
-    {
-        status = sja1000_send_message(&msg);
-        
-        if(status == false)
-        {
-            printf("Can send failed\r\n");
-            return;
-        }
-    }
-    
-    printf("Can send sucessfully\r\n");
-    
-   }
-
-#endif
+   printf("Can sent\r\n");
 }
 #endif
 
@@ -630,6 +653,10 @@ int main(int i, char **c)
 
 #ifdef GPIO_ISR_INTERRUPT 
     gpio_isr_init();
+#endif
+
+#ifdef CAN_CTRL_BASE
+    basic_can_self_test_init();
 #endif
 
 	printf("\n");
