@@ -9,9 +9,7 @@ from litex.build.altera.programmer import USBBlaster
 
 _io = [
     ("clk50", 0, Pins("T2"), IOStandard("3.3-V LVTTL")),
-
-    ("led0", 0, Pins("E4"), IOStandard("3.3-V LVTTL")),
-
+ 
     ("user_led", 0, Pins("AA15"), IOStandard("3.3-V LVTTL")),
   # ("user_led", 1, Pins("AB15"), IOStandard("3.3-V LVTTL")),
   # ("user_led", 2, Pins("AA16"), IOStandard("3.3-V LVTTL")),
@@ -20,6 +18,8 @@ _io = [
   # ("user_led", 5, Pins("AB17"), IOStandard("3.3-V LVTTL")),
   # ("user_led", 6, Pins("AA18"), IOStandard("3.3-V LVTTL")),
     ("user_led", 7, Pins("AB18"), IOStandard("3.3-V LVTTL")),
+
+    ("led0", 0, Pins("E4"), IOStandard("3.3-V LVTTL")),
 
     ("key", 0, Pins("W13"), IOStandard("3.3-V LVTTL")),
     ("key", 1, Pins("Y13"), IOStandard("3.3-V LVTTL")),
