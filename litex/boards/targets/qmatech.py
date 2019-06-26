@@ -73,7 +73,7 @@ class BaseSoC(SoCCore):
         SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
                          with_uart=True,
                          integrated_rom_size=0x9000,
-                         integrated_main_ram_size=0x1000,
+                         integrated_main_ram_size=0x800,
                          **kwargs)
         
         self.submodules.crg = _CRG(platform)

@@ -67,6 +67,24 @@ void gpio_isr_interrupt(void)
 }
 #endif
 
+#ifdef CAN_CTRL_INTERRUPT
+void can_ctrl_interrupt(void);
+void can_ctrl_interrupt(void)
+{
+  unsigned int status;
+
+  status = can_ctrl_ev_pending_read(); // you don't need to do this if you just have one interrupt source
+
+  if( status & 1 ) 
+  {
+    printf("Can ctrl interrupt\r\n");
+    can_ctrl_ev_pending_write(1);     // clear the interrupt so it doesn't keep on firing and wedge the CPU
+  } 
+
+  can_ctrl_ev_enable_write(1);        // re-enable the event handler so we can catch the interrupt again    
+}
+#endif
+
 void isr(void);
 void isr(void)
 {
@@ -76,6 +94,11 @@ void isr(void)
 
     if(irqs & (1 << UART_INTERRUPT))
         uart_isr();
+    
+#ifdef CAN_CTRL_INTERRUPT
+    if(irqs & (1 << CAN_CTRL_INTERRUPT))
+        can_ctrl_interrupt();    
+#endif
 
 #ifdef GPIO_ISR_INTERRUPT
     if(irqs & (1 << GPIO_ISR_INTERRUPT))

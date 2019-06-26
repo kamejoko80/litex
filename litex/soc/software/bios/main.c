@@ -23,11 +23,21 @@
 
 #ifdef GPIO_ISR_INTERRUPT
 void gpio_isr_init(void);
-void gpio_isr_init(void) 
+void gpio_isr_init(void)
 {  
   gpio_isr_ev_pending_write(gpio_isr_ev_pending_read());
   gpio_isr_ev_enable_write(1);
-  irq_setmask(irq_getmask() | (1 << GPIO_ISR_INTERRUPT)); 
+  irq_setmask(irq_getmask() | (1 << GPIO_ISR_INTERRUPT));
+}
+#endif
+
+#ifdef CAN_CTRL_INTERRUPT
+void can_ctrl_isr_init(void);
+void can_ctrl_isr_init(void)
+{
+  can_ctrl_ev_pending_write(can_ctrl_ev_pending_read());
+  can_ctrl_ev_enable_write(1);
+  irq_setmask(irq_getmask() | (1 << CAN_CTRL_INTERRUPT));
 }
 #endif
 
@@ -107,15 +117,18 @@ static void delay(uint32_t n)
 
 static void basic_can_self_test_init(void)
 {
-    // Enter reset mode, enable self test mode
-    MOD = (1 << RM) | ( 1<< AFM) | ( 1 << STM);
+    // Enter basic can mode
+    CDR = 0x03; 
+    
+    // Enter reset mode, enable transmit interrupt
+    CR = (1 << CR_RR) | ( 1<< CR_TIE);
  
     // Can baudrate setting
     BTR0 = 0x09;  
     BTR1 = 0x2F;
  
     // Clear TX, RX error counter
-    EWL = 0xFF;
+    EWL   = 0xFF;
     RXERR = 0x00;    
     TXERR = 0x00;
  
@@ -124,13 +137,13 @@ static void basic_can_self_test_init(void)
     AMR = 0xFF; // acceptance mask
 
     // Switch-off reset mode
-    MOD &= ~(1 << RM);  // reset_off, all irqs enabled.   
+    CR &= ~(1 << CR_RR);  // reset_off, all irqs enabled.   
 }
 
 static void basic_can_clr_tx_rx_error(void)
 {
     // Enter reset mode
-    MOD |= (1 << RM);
+    CR |= (1 << CR_RR);
    
     // Clear TX, RX error counter
     EWL = 0xFF;
@@ -138,7 +151,7 @@ static void basic_can_clr_tx_rx_error(void)
     TXERR = 0x00;   
    
     // Switch-off reset mode
-    MOD &= ~(1 << RM);
+    CR &= ~(1 << CR_RR);
 }
 
 static void basic_can_self_test(void)
@@ -151,7 +164,7 @@ static void basic_can_self_test(void)
     while((SR & (1 << TBS))==0);
     
     TX_DATA_0 = 0x55; // Writing ID[10:3] = 0x55
-    TX_DATA_1 = 0x67; // Writing ID[2:0] = 0x3, rtr = 0, length = 7
+    TX_DATA_1 = 0x07; // Writing ID[2:0] = 0x3, rtr = 0, length = 7
     TX_DATA_2 = 0xAA; // data byte 1
     TX_DATA_3 = 0xAA; // data byte 2
     TX_DATA_4 = 0xAA; // data byte 3
@@ -162,7 +175,7 @@ static void basic_can_self_test(void)
     TX_DATA_9 = 0x00; // data byte 8
 
     // Transmit, receive request
-	CMR = (1 << SRR) | (1 << AT) | (1 << TR); 
+	CMR |= (1 << TR); 
 
     // Wait for trasmition complete
     timeout = 0;
@@ -181,22 +194,11 @@ static void basic_can_self_test(void)
             return;
         }
     }
-    
-    if(SR & (1<<RS))
-    {
-        printf("Message receive\r\n");
-        CMR = (1 << CDO) | (1 << RRB);
-    }
 }
 
 static void can_transmit_demo(void)
-{ 
-
-   for(int i = 1; i < 10; i++) 
-   {    
-     basic_can_self_test();
-   }
-   
+{    
+   basic_can_self_test();   
    printf("Can sent\r\n");
 }
 #endif
@@ -651,12 +653,12 @@ int main(int i, char **c)
 	irq_setie(1);
 	uart_init();
 
-#ifdef GPIO_ISR_INTERRUPT 
-    gpio_isr_init();
+#ifdef CAN_CTRL_INTERRUPT
+    can_ctrl_isr_init();
 #endif
 
-#ifdef CAN_CTRL_BASE
-    basic_can_self_test_init();
+#ifdef GPIO_ISR_INTERRUPT 
+    gpio_isr_init();
 #endif
 
 	printf("\n");

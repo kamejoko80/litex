@@ -129,8 +129,8 @@ _Bool sja1000_send_message(const can_t *msg);
 
 /* TX data buffer (PeliCAN mode only) */
 #define TX_INFO     (*(volatile unsigned char *)(CAN_CTRL_BASE + 16*4))
-#define TX_ID1      (*(volatile unsigned char *)(CAN_CTRL_BASE + 17*4))
-#define TX_ID0      (*(volatile unsigned char *)(CAN_CTRL_BASE + 18*4))
+#define TX_ID0      (*(volatile unsigned char *)(CAN_CTRL_BASE + 17*4))
+#define TX_ID1      (*(volatile unsigned char *)(CAN_CTRL_BASE + 18*4))
 #define TX_DATA0    (*(volatile unsigned char *)(CAN_CTRL_BASE + 19*4))
 #define TX_DATA1    (*(volatile unsigned char *)(CAN_CTRL_BASE + 20*4))
 #define TX_DATA2    (*(volatile unsigned char *)(CAN_CTRL_BASE + 21*4))
@@ -153,6 +153,14 @@ _Bool sja1000_send_message(const can_t *msg);
 #define RX_DATA6    (*(volatile unsigned char *)(CAN_CTRL_BASE + 25*4))
 #define RX_DATA7    (*(volatile unsigned char *)(CAN_CTRL_BASE + 26*4))
 
+/**
+ * \brief   Bitdefinition von CR
+ */
+#define CR_OIE       4
+#define CR_EIE       3
+#define CR_TIE       2
+#define CR_RIE       1
+#define CR_RR        0
 
 /**
  * \brief   Bitdefinition von MOD
