@@ -7,6 +7,7 @@ from migen.genlib.resetsync import AsyncResetSynchronizer
 
 from litex.boards.platforms import ice40_hx8k_b_evn
 
+from litex.soc.cores.spi_flash import SpiFlash
 from litex.soc.cores.clock import *
 from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
@@ -46,11 +47,13 @@ class BaseSoC(SoCCore):
         sys_clk_freq = int(12e6)
         SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
                          with_uart=True,
-                         integrated_rom_size=0x2000,
+                         integrated_rom_size=0,
+                         integrated_sram_size=4096,
                          integrated_main_ram_size=0,
-                         **kwargs)
-
+                         **kwargs)                         
+                         
         self.submodules.crg = _CRG(platform)
+              
 
 
 # Build --------------------------------------------------------------------------------------------

@@ -44,5 +44,15 @@ class Platform(LatticePlatform):
     default_clk_name = "clk12"
     default_clk_period = 83.333
 
+    gateware_size = 0x30000
+
+    # FIXME: Create a "spi flash module" object in the same way we have SDRAM
+    spiflash_model = "n25q32"
+    spiflash_read_dummy_bits = 8
+    spiflash_clock_div = 2
+    spiflash_total_size = int((32/8)*1024*1024) # 32Mbit
+    spiflash_page_size = 256
+    spiflash_sector_size = 0x10000    
+    
     def __init__(self, device="ice40-hx8k", **kwargs):
         LatticePlatform.__init__(self, device + "-ct256", _io, **kwargs)
