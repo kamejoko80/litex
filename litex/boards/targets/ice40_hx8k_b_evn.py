@@ -13,7 +13,7 @@ from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
 
 # CRG ----------------------------------------------------------------------------------------------
-      
+
 class _CRG(Module):
     def __init__(self, platform):
         clk12 = platform.request("clk12")
@@ -21,9 +21,20 @@ class _CRG(Module):
         self.clock_domains.cd_sys = ClockDomain()
         self.reset = Signal()
 
-        # FIXME: Use PLL, increase system clock to 32 MHz, pending nextpnr
-        # fixes.
-        self.comb += self.cd_sys.clk.eq(clk12)
+        # Fout = Fin x (DIVF + 1) / (2^DIVQ x (DIVR + 1))
+        self.specials += \
+            Instance("SB_PLL40_CORE",
+                p_FEEDBACK_PATH="SIMPLE",
+                p_PLLOUT_SELECT="GENCLK",
+                p_DIVR=0,    # 0
+                p_DIVF=7,    # 7
+                p_DIVQ=1,    # 1
+                p_FILTER_RANGE=0b010,
+                i_RESETB=1,
+                i_BYPASS=0,
+                i_REFERENCECLK=clk12,
+                o_PLLOUTCORE=self.cd_sys.clk, # 48MHz
+            )
 
         # POR reset logic- POR generated from sys clk, POR logic feeds sys clk
         # reset.
@@ -37,29 +48,27 @@ class _CRG(Module):
             If(reset_delay != 0,
                 reset_delay.eq(reset_delay - 1)
             )
-        self.specials += AsyncResetSynchronizer(self.cd_por, self.reset)        
-        
+        self.specials += AsyncResetSynchronizer(self.cd_por, self.reset)
+
 # BaseSoC ------------------------------------------------------------------------------------------
 
 class BaseSoC(SoCCore):
     def __init__(self, device="ice40-hx8k", toolchain="icestorm", **kwargs):
         platform = ice40_hx8k_b_evn.Platform(device=device, toolchain=toolchain)
-        sys_clk_freq = int(12e6)
+        sys_clk_freq = int(48e6)
         SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
                          with_uart=True,
                          integrated_rom_size=0,
                          integrated_sram_size=4096,
                          integrated_main_ram_size=0,
-                         **kwargs)                         
-                         
-        self.submodules.crg = _CRG(platform)
-              
+                         **kwargs)
 
+        self.submodules.crg = _CRG(platform)
 
 # Build --------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="LiteX SoC on ULX3S")
+    parser = argparse.ArgumentParser(description="LiteX SoC on ICE40-HX8K")
     parser.add_argument("--gateware-toolchain", dest="toolchain", default="icestorm",
         help='gateware toolchain to use, icestorm')
     parser.add_argument("--device", dest="device", default="ice40-hx8k",
