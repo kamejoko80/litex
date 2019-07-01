@@ -36,7 +36,13 @@ void gpio_isr_init(void)
 static void spi_demo(void)
 {
     spi_init();
-}    
+    spi_send_byte(0x11);
+    spi_send_byte(0x22);
+    spi_send_byte(0x33);
+    spi_send_byte(0x44);
+    spi_send_byte(0x55);
+    printf("spi sent sucessfully\r\n");
+}
 #endif
 
 #ifdef CAN_CTRL_INTERRUPT

@@ -19,15 +19,22 @@
 
 void spi_init(void)
 {
-    SPI_DIV  = 0x00;  // fclk/2
-    SPI_TX0  = 0x5A;  // TX = 0x5A
-    SPI_CTRL = 0x208; // set 8 bit transfer
-    SPI_SS   = 0x01;  // ss = 0 
+    SPI_DIV   = 0x00;  // fclk/2
+    SPI_CTRL  = (1 << ASS) | (1 << LSB);
+    SPI_CTRL |= 0x08;
+    SPI_SS    = 0x01;  // ss = 0
 
     printf("SPI_DIV  = %X\r\n", SPI_DIV);
     printf("SPI_TX0  = %X\r\n", SPI_TX0);
     printf("SPI_CTRL = %X\r\n", SPI_CTRL);
     printf("SPI_SS   = %X\r\n", SPI_SS);
+}
+
+void spi_send_byte(uint8_t data)
+{
+    SPI_TX0   = data;
+    SPI_CTRL |= (1 << GO_BSY);
+    while(SPI_CTRL & (1 << GO_BSY));
 }
 
 #endif /* SPI_MASTER_BASE */

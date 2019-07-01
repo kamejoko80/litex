@@ -16,8 +16,19 @@
 #define SPI_DIV     (*(volatile uint32_t *)(SPI_MASTER_BASE + 0x14)) // Clock divider
 #define SPI_SS      (*(volatile uint32_t *)(SPI_MASTER_BASE + 0x18)) // Slave select register 
 
+/* Bit definition */
+#define ASS      (13) //
+#define IE       (12) //
+#define LSB      (11) //
+#define TX_NEG   (10) //
+#define RX_NEG   (9)  //
+#define GO_BSY   (8)  //
+#define CHAR_LEN (6)  //
+
+
 #ifdef SPI_MASTER_BASE
 void spi_init(void);
+void spi_send_byte(uint8_t data);
 #endif
 
 #endif /* __SPI_H */
