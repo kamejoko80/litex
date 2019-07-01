@@ -18,6 +18,7 @@
 #include "sdram.h"
 #include "boot.h"
 #include "can.h"
+#include "spi.h"
 
 /* General address space functions */
 
@@ -29,6 +30,13 @@ void gpio_isr_init(void)
   gpio_isr_ev_enable_write(1);
   irq_setmask(irq_getmask() | (1 << GPIO_ISR_INTERRUPT));
 }
+#endif
+
+#ifdef SPI_MASTER_BASE
+static void spi_demo(void)
+{
+    spi_init();
+}    
 #endif
 
 #ifdef CAN_CTRL_INTERRUPT
@@ -451,6 +459,9 @@ static void help(void)
 #endif    
 #ifdef CSR_ADDER8_BASE
     puts("adder8     - Adder 8bit demo");
+#endif
+#ifdef SPI_MASTER_BASE
+    puts("spidemo    - spi master demo");
 #endif    
 #ifdef CSR_CTRL_BASE
 	puts("reboot     - reset processor");
@@ -513,6 +524,9 @@ static void do_command(char *c)
 #endif    
 #ifdef CSR_ADDER8_BASE
 	else if(strcmp(token, "adder8") == 0) adder8(get_token(&c), get_token(&c));
+#endif
+#ifdef SPI_MASTER_BASE
+	else if(strcmp(token, "spidemo") == 0) spi_demo();
 #endif       
 #ifdef L2_SIZE
 	else if(strcmp(token, "flushl2") == 0) flush_l2_cache();
