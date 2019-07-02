@@ -20,6 +20,8 @@
 #include "can.h"
 #include "spi.h"
 
+extern void flash_boot_raw(void);
+
 /* General address space functions */
 
 #ifdef GPIO_ISR_INTERRUPT
@@ -478,6 +480,7 @@ static void help(void)
 	puts("serialboot - boot via SFL");
 #ifdef FLASH_BOOT_ADDRESS
 	puts("flashboot  - boot from flash");
+    puts("fbraw      - boot from fash without integrity checking"); 
 #endif
 #ifdef ROM_BOOT_ADDRESS
 	puts("romboot    - boot from embedded rom");
@@ -542,6 +545,7 @@ static void do_command(char *c)
 #endif
 #ifdef FLASH_BOOT_ADDRESS
 	else if(strcmp(token, "flashboot") == 0) flashboot();
+    else if(strcmp(token, "fbraw") == 0) flash_boot_raw();
 #endif
 #ifdef ROM_BOOT_ADDRESS
 	else if(strcmp(token, "romboot") == 0) romboot();

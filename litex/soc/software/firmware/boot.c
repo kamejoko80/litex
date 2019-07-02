@@ -44,13 +44,6 @@ enum {
 	ACK_OK
 };
 
-/* boot from fash without integrity checking */
-void flash_boot_raw(void);
-void flash_boot_raw(void)
-{
-    boot(0, 0, 0, FLASH_BOOT_ADDRESS);    
-}
-
 static int check_ack(void)
 {
 	int recognized;
