@@ -20,7 +20,9 @@
 #include "can.h"
 #include "spi.h"
 
+#ifdef FLASH_BOOT_ADDRESS
 extern void flash_boot_raw(void);
+#endif
 
 /* General address space functions */
 
@@ -35,15 +37,25 @@ void gpio_isr_init(void)
 #endif
 
 #ifdef SPI_MASTER_BASE
-static void spi_demo(void)
+static void adc_read(char *chanel)
 {
-    spi_init();
-    spi_send_byte(0x11);
-    spi_send_byte(0x22);
-    spi_send_byte(0x33);
-    spi_send_byte(0x44);
-    spi_send_byte(0x55);
-    printf("spi sent sucessfully\r\n");
+    char *c;
+    uint16_t adc;
+    unsigned char chan;
+
+    if(*chanel == 0) {
+        printf("adc <chanel>\n");
+        return;
+    }
+
+    chan = strtoul(chanel, &c, 0);
+    if(*c != 0) {
+        printf("incorrect chanel\n");
+        return;
+    }
+
+    adc = spi_adc_read(chan);
+    printf("adc = %X\r\n", adc);
 }
 #endif
 
@@ -469,7 +481,7 @@ static void help(void)
     puts("adder8     - Adder 8bit demo");
 #endif
 #ifdef SPI_MASTER_BASE
-    puts("spidemo    - spi master demo");
+    puts("adc        - ADC read");
 #endif    
 #ifdef CSR_CTRL_BASE
 	puts("reboot     - reset processor");
@@ -535,7 +547,7 @@ static void do_command(char *c)
 	else if(strcmp(token, "adder8") == 0) adder8(get_token(&c), get_token(&c));
 #endif
 #ifdef SPI_MASTER_BASE
-	else if(strcmp(token, "spidemo") == 0) spi_demo();
+	else if(strcmp(token, "adc") == 0) adc_read(get_token(&c));
 #endif       
 #ifdef L2_SIZE
 	else if(strcmp(token, "flushl2") == 0) flush_l2_cache();
@@ -649,6 +661,7 @@ static void readstr(char *s, int size)
 	}
 }
 
+#if 0
 static void boot_sequence(void)
 {
 	if(serialboot()) {
@@ -667,6 +680,7 @@ static void boot_sequence(void)
 		printf("No boot medium found\n");
 	}
 }
+#endif
 
 int main(int i, char **c)
 {
@@ -676,6 +690,10 @@ int main(int i, char **c)
 	irq_setmask(0);
 	irq_setie(1);
 	uart_init();
+
+#ifdef SPI_MASTER_BASE
+    spi_init();
+#endif
 
 #ifdef CAN_CTRL_INTERRUPT
     can_ctrl_isr_init();
@@ -745,7 +763,7 @@ int main(int i, char **c)
 
 	if(sdr_ok) {
 		printf("--========== \e[1mBoot sequence\e[0m =============--\n");
-		boot_sequence();
+		// boot_sequence();
 		printf("\n");
 	}
 

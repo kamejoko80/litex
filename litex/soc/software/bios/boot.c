@@ -45,11 +45,13 @@ enum {
 };
 
 /* boot from fash without integrity checking */
+#ifdef FLASH_BOOT_ADDRESS
 void flash_boot_raw(void);
 void flash_boot_raw(void)
 {
-    boot(0, 0, 0, FLASH_BOOT_ADDRESS);    
+    boot(0, 0, 0, FLASH_BOOT_ADDRESS);
 }
+#endif
 
 static int check_ack(void)
 {

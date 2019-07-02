@@ -28,7 +28,7 @@
 
 #ifdef SPI_MASTER_BASE
 void spi_init(void);
-void spi_send_byte(uint8_t data);
+uint16_t spi_adc_read(uint8_t chanel);
 #endif
 
 #endif /* __SPI_H */

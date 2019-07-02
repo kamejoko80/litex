@@ -35,10 +35,10 @@ _io = [
     ),
 
     ("spi", 0,
-        Subsignal("sclk", Pins("B1"), IOStandard("LVCMOS33")),
-        Subsignal("miso", Pins("B2"), IOStandard("LVCMOS33")),
-        Subsignal("mosi", Pins("C1"), IOStandard("LVCMOS33")),
-        Subsignal("csn", Pins("C2"), IOStandard("LVCMOS33")),
+        Subsignal("sclk", Pins("G1"), IOStandard("LVCMOS33")),
+        Subsignal("miso", Pins("F1"), IOStandard("LVCMOS33")),
+        Subsignal("mosi", Pins("E2"), IOStandard("LVCMOS33")),
+        Subsignal("csn", Pins("F2"), IOStandard("LVCMOS33")),
         Subsignal("irq", Pins("C3"), IOStandard("LVCMOS33")),
     ),
 
