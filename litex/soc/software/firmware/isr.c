@@ -44,6 +44,25 @@ void isr(void)
 	}
 }
 #else
+
+#ifdef SPI_MASTER_INTERRUPT
+extern void spi_irq (void);
+void spi_master_interrupt(void);
+void spi_master_interrupt(void)
+{
+  unsigned int status;
+
+  status = spi_master_ev_pending_read();
+
+  if( status & 1 ) 
+  {
+    spi_irq();
+    spi_master_ev_pending_write(1);
+  } 
+
+  spi_master_ev_enable_write(1); 
+}
+#endif
     
 #ifdef GPIO_ISR_INTERRUPT
 void gpio_isr_interrupt(void); 
@@ -94,7 +113,7 @@ void isr(void)
 
     if(irqs & (1 << UART_INTERRUPT))
         uart_isr();
-    
+
 #ifdef CAN_CTRL_INTERRUPT
     if(irqs & (1 << CAN_CTRL_INTERRUPT))
         can_ctrl_interrupt();    
@@ -103,6 +122,11 @@ void isr(void)
 #ifdef GPIO_ISR_INTERRUPT
     if(irqs & (1 << GPIO_ISR_INTERRUPT))
         gpio_isr_interrupt();
+#endif
+
+#ifdef SPI_MASTER_INTERRUPT
+    if(irqs & (1 << SPI_MASTER_INTERRUPT))
+        spi_master_interrupt();
 #endif
 
 }

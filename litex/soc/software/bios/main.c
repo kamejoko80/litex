@@ -26,6 +26,16 @@ extern void flash_boot_raw(void);
 
 /* General address space functions */
 
+#ifdef SPI_MASTER_INTERRUPT
+void spi_master_isr_init(void);
+void spi_master_isr_init(void)
+{  
+  spi_master_ev_pending_write(spi_master_ev_pending_read());
+  spi_master_ev_enable_write(1);
+  irq_setmask(irq_getmask() | (1 << SPI_MASTER_INTERRUPT));
+}
+#endif
+
 #ifdef GPIO_ISR_INTERRUPT
 void gpio_isr_init(void);
 void gpio_isr_init(void)
@@ -693,6 +703,10 @@ int main(int i, char **c)
 
 #ifdef SPI_MASTER_BASE
     spi_init();
+#endif
+
+#ifdef SPI_MASTER_INTERRUPT
+    spi_master_isr_init();
 #endif
 
 #ifdef CAN_CTRL_INTERRUPT

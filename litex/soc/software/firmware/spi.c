@@ -17,10 +17,14 @@
 
 #ifdef SPI_MASTER_BASE
 
+/* Function prototype */
+void spi_irq (void);
+
 void spi_init(void)
 {
     SPI_DIV   = 0x01;  // fclk/4 ~ 12MHz
     SPI_CTRL  = (1 << ASS) | (1 << TX_NEG);
+    // SPI_CTRL |= (1 << IE);
     SPI_CTRL |= 0x10;  // 16 byte transfer
     SPI_SS    = 0x01;  // cns = 0
 
@@ -35,6 +39,14 @@ uint16_t spi_adc_read(uint8_t chanel)
     SPI_CTRL |= (1 << GO_BSY);
     while(SPI_CTRL & (1 << GO_BSY));
     return SPI_RX0;
+}
+
+void spi_irq (void)
+{
+    uint32_t dummy;
+    printf("spi master irq\n");
+    dummy = SPI_CTRL;
+    dummy = dummy;
 }
 
 #endif /* SPI_MASTER_BASE */
