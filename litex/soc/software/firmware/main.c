@@ -69,6 +69,8 @@ int main(int i, char **c)
         printf("=====================\n");
         for(int j = 0; j < 8; j++)
         {
+            /* Read 2 times */
+            adc = spi_adc_read(j);
             adc = spi_adc_read(j);
             voltage = (3300 * adc) / 0x7FF;
             printf("adc[%d] = %d\t[mV]\n", j, voltage);
