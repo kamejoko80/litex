@@ -62,28 +62,29 @@ int main(int i, char **c)
 	printf(" Firmware built on "__DATE__" "__TIME__"\n");
 	printf("\n");
 
-    printf("Read ADC\n");
+    printf("ADC voltatge measurement demo\n");
+    printf("Press any key to quit the program\n");
+    printf("\n");
 
-    for(int i = 1; i <= 20; i++)
-    {
-        printf("=====================\n");
+    printf("Volt\t[0]\t[1]\t[2]\t[3]\t[4]\t[5]\t[6]\t[7]\t[mV]\n");
+    printf("        ===========================================================\n");
+    printf("    \t");    
+    
+    while(readchar_nonblock() == 0)
+    {   
         for(int j = 0; j < 8; j++)
         {
             /* Read 2 times */
             adc = spi_adc_read(j);
             adc = spi_adc_read(j);
             voltage = (3300 * adc) / 0x7FF;
-            printf("adc[%d] = %d\t[mV]\n", j, voltage);
+            printf("%d\t", voltage);
         }
-        printf("\n");
+        printf("\r                                                                   ");
+        printf("\r    \t");
     }
 
-    printf("Done!\n");
-
 #ifdef CSR_CTRL_BASE
-    printf("Press anykey to quit the program\n");
-    uart_read();
-
     /* Reboot the board */
     reboot();
 #endif

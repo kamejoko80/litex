@@ -32,9 +32,9 @@ void spi_init(void)
     SPI_CTRL |= 0x10;  // 16 byte transfer
     SPI_SS    = 0x01;  // cns = 0
 
-    printf("SPI_DIV  = %X\r\n", SPI_DIV);
-    printf("SPI_CTRL = %X\r\n", SPI_CTRL);
-    printf("SPI_SS   = %X\r\n", SPI_SS);
+    //printf("SPI_DIV  = %X\r\n", SPI_DIV);
+    //printf("SPI_CTRL = %X\r\n", SPI_CTRL);
+    //printf("SPI_SS   = %X\r\n", SPI_SS);
 }
 
 uint16_t spi_adc_read(uint8_t chanel)
