@@ -64,6 +64,8 @@ static void adc_read(char *chanel)
         return;
     }
 
+    /* Workaround adc sample delay problem */
+    adc = spi_adc_read(chan);
     adc = spi_adc_read(chan);
     printf("adc = %X\r\n", adc);
 }
