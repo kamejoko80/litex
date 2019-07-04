@@ -23,7 +23,7 @@ void spi_irq (void);
 void spi_init(void)
 {
     /*
-     * sclk = wb_clk /((SPI_DIV + 3) x 2)
+     * sclk = wb_clk /((SPI_DIV + 1) x 2)
      *
      */
     SPI_DIV   = 0x01;  // fclk/4 ~ 12MHz
