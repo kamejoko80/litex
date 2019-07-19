@@ -36,12 +36,20 @@ _io = [
 
     ("MyUart", 0, Pins("AB15"), IOStandard("3.3-V LVTTL")),
 
-    ("canif", 0,
-        Subsignal("tx", Pins("AA16"), IOStandard("3.3-V LVTTL")),
-        Subsignal("rx", Pins("AB16"), IOStandard("3.3-V LVTTL")),
-        Subsignal("boo", Pins("AA17"), IOStandard("3.3-V LVTTL")),
-        Subsignal("irq", Pins("AB17"), IOStandard("3.3-V LVTTL")),
-        Subsignal("clkout", Pins("AA18"), IOStandard("3.3-V LVTTL"))
+    #("canif", 0,
+    #    Subsignal("tx", Pins("AA16"), IOStandard("3.3-V LVTTL")),
+    #    Subsignal("rx", Pins("AB16"), IOStandard("3.3-V LVTTL")),
+    #    Subsignal("boo", Pins("AA17"), IOStandard("3.3-V LVTTL")),
+    #    Subsignal("irq", Pins("AB17"), IOStandard("3.3-V LVTTL")),
+    #    Subsignal("clkout", Pins("AA18"), IOStandard("3.3-V LVTTL"))
+    #),
+
+    ("spi", 0,
+        Subsignal("sck", Pins("AA16"), IOStandard("3.3-V LVTTL")), # U8 13 -> PA5 
+        Subsignal("miso", Pins("AB16"), IOStandard("3.3-V LVTTL")), # U8 14 -> PA6
+        Subsignal("mosi", Pins("AA17"), IOStandard("3.3-V LVTTL")), # U8 15 -> PA7
+        Subsignal("csn", Pins("AB17"), IOStandard("3.3-V LVTTL")),  # U8 16 -> PA4
+        Subsignal("irq", Pins("AA18"), IOStandard("3.3-V LVTTL")),  # U8 17
     ),
 
     ("sdram_clock", 0, Pins("Y6"), IOStandard("3.3-V LVTTL")),

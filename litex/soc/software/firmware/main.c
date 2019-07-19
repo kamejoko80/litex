@@ -69,7 +69,8 @@ int main(int i, char **c)
     printf("Volt\t[0]\t[1]\t[2]\t[3]\t[4]\t[5]\t[6]\t[7]\t[mV]\n");
     printf("        ===========================================================\n");
     printf("    \t");    
-    
+
+#ifdef SPI_MASTER_BASE    
     while(readchar_nonblock() == 0)
     {   
         for(int j = 0; j < 8; j++)
@@ -83,7 +84,8 @@ int main(int i, char **c)
         printf("\r                                                                   ");
         printf("\r    \t");
     }
-
+#endif
+    
 #ifdef CSR_CTRL_BASE
     /* Reboot the board */
     reboot();
