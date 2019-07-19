@@ -19,7 +19,7 @@
 #ifdef SPI_MASTER_INTERRUPT
 void spi_master_isr_init(void);
 void spi_master_isr_init(void)
-{  
+{
   spi_master_ev_pending_write(spi_master_ev_pending_read());
   spi_master_ev_enable_write(1);
   irq_setmask(irq_getmask() | (1 << SPI_MASTER_INTERRUPT));
@@ -35,15 +35,12 @@ static void reboot(void)
 
 int main(int i, char **c)
 {
-    uint16_t adc;
-    uint32_t voltage;
-
 	irq_setmask(0);
 	irq_setie(1);
 	uart_init();
 
 #ifdef SPI_MASTER_BASE
-    spi_init(); 
+    spi_init();
 #endif
 
 #ifdef SPI_MASTER_INTERRUPT
@@ -62,17 +59,93 @@ int main(int i, char **c)
 	printf(" Firmware built on "__DATE__" "__TIME__"\n");
 	printf("\n");
 
+#ifdef SPI_MASTER_BASE
+#if 1 /* Test spi slave loop back */
+
+    uint16_t reg0, reg1, reg2, reg3;
+    uint16_t j;
+
+    printf("SPI slave test demo\n");
+    printf("\n");
+
+    printf("Read ID registers\n");
+
+    spi_csn_active();
+    spi_byte_transfer(0x0B);
+    spi_byte_transfer(0x00);
+    reg0 = spi_byte_transfer(0x00);
+    reg1 = spi_byte_transfer(0x00);
+    reg2 = spi_byte_transfer(0x00);
+    reg3 = spi_byte_transfer(0x00);
+    printf("Reg0 = %X\n", reg0);
+    printf("Reg1 = %X\n", reg1);
+    printf("Reg2 = %X\n", reg2);
+    printf("Reg3 = %X\n", reg3);
+    printf("=============\n");
+    spi_csn_inactive();
+
+    printf("Write registers\n");
+
+    for(j = 0; j < 15; j++)
+    {
+        spi_csn_active();
+        spi_byte_transfer(0x0A);
+        spi_byte_transfer(32 + j);
+        spi_byte_transfer(0xA5);
+        spi_csn_inactive();
+    }
+
+    printf("Read back registers\n");
+
+    spi_csn_active();
+    spi_byte_transfer(0x0B);
+    spi_byte_transfer(32);
+
+    for(j = 0; j < 15; j++)
+    {
+       reg0 = spi_byte_transfer(0x00);
+       printf("Reg[%d] = %X\n", 32+j, reg0);
+    }
+
+    spi_csn_inactive();
+
+    for(j = 0; j < 20; j++)
+    {
+        spi_csn_active();
+        spi_byte_transfer(0x0B);
+        spi_byte_transfer(0x00);
+        reg0 = spi_byte_transfer(0x00);
+        reg1 = spi_byte_transfer(0x00);
+        reg2 = spi_byte_transfer(0x00);
+        reg3 = spi_byte_transfer(0x00);
+        printf("Reg0 = %X\n", reg0);
+        printf("Reg1 = %X\n", reg1);
+        printf("Reg2 = %X\n", reg2);
+        printf("Reg3 = %X\n", reg3);
+        printf("=============\n");
+        spi_csn_inactive();
+    }
+
+    printf("Done! Press anykey to quit\n");
+
+    while(readchar_nonblock() == 0);
+
+
+#else /* Test ADC128S102 */
+
     printf("ADC voltatge measurement demo\n");
     printf("Press any key to quit the program\n");
     printf("\n");
 
     printf("Volt\t[0]\t[1]\t[2]\t[3]\t[4]\t[5]\t[6]\t[7]\t[mV]\n");
     printf("        ===========================================================\n");
-    printf("    \t");    
+    printf("    \t");
 
-#ifdef SPI_MASTER_BASE    
     while(readchar_nonblock() == 0)
-    {   
+    {
+        uint16_t adc;
+        uint32_t voltage;
+
         for(int j = 0; j < 8; j++)
         {
             /* Read 2 times */
@@ -85,7 +158,8 @@ int main(int i, char **c)
         printf("\r    \t");
     }
 #endif
-    
+#endif
+
 #ifdef CSR_CTRL_BASE
     /* Reboot the board */
     reboot();
