@@ -63,7 +63,7 @@ int main(int i, char **c)
 #if 1 /* Test spi slave loop back */
 
     uint16_t reg0, reg1, reg2, reg3;
-    uint16_t j;
+    uint32_t j;
 
     printf("SPI slave test demo\n");
     printf("\n");
@@ -126,9 +126,26 @@ int main(int i, char **c)
         spi_csn_inactive();
     }
 
-    printf("Done! Press anykey to quit\n");
+    printf("Done! Reading FIFO...\n");
+
+    spi_csn_active();
+    spi_byte_transfer(0x0D);
+
+    for(j = 0; j < 512; j++)
+    {
+        reg0 = spi_byte_transfer(0x00);
+        if(reg0 != 0)
+        {
+            printf("FIFO data = %X\n", reg0);
+        }
+    }
+
+    spi_csn_inactive();
+
+    printf("Done! press anykey to quit the program\n");
 
     while(readchar_nonblock() == 0);
+
 
 
 #else /* Test ADC128S102 */

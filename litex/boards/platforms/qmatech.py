@@ -9,7 +9,7 @@ from litex.build.altera.programmer import USBBlaster
 
 _io = [
     ("clk50", 0, Pins("T2"), IOStandard("3.3-V LVTTL")),
- 
+
     ("user_led", 0, Pins("AA15"), IOStandard("3.3-V LVTTL")),
   # ("user_led", 1, Pins("AB15"), IOStandard("3.3-V LVTTL")),
   # ("user_led", 2, Pins("AA16"), IOStandard("3.3-V LVTTL")),
@@ -45,11 +45,15 @@ _io = [
     #),
 
     ("spi", 0,
-        Subsignal("sck", Pins("AA16"), IOStandard("3.3-V LVTTL")), # U8 13 -> PA5 
+        # SPI slave part
+        Subsignal("sck", Pins("AA16"), IOStandard("3.3-V LVTTL")), # U8 13 -> PA5
         Subsignal("miso", Pins("AB16"), IOStandard("3.3-V LVTTL")), # U8 14 -> PA6
         Subsignal("mosi", Pins("AA17"), IOStandard("3.3-V LVTTL")), # U8 15 -> PA7
         Subsignal("csn", Pins("AB17"), IOStandard("3.3-V LVTTL")),  # U8 16 -> PA4
         Subsignal("irq", Pins("AA18"), IOStandard("3.3-V LVTTL")),  # U8 17
+        # UART part
+        Subsignal("tx", Pins("N20"), IOStandard("3.3-V LVTTL")),  # U8 16 -> PA4
+        Subsignal("rx", Pins("M20"), IOStandard("3.3-V LVTTL")),  # U8 17
     ),
 
     ("sdram_clock", 0, Pins("Y6"), IOStandard("3.3-V LVTTL")),
@@ -96,7 +100,7 @@ _io = [
 
     ("gpio_0", 0,
         Pins("P22 P21 N22 N21 M22 M21 L22 L21 K22 K21 J22 J21 H22 H21 F22 F21",
-            "E22 E21 D22 D21 C22 C21 B22 B21 N20 N19 M20 M19 R1 R2 P1 P2",
+            "E22 E21 D22 D21 C22 C21 B22 B21 N19 M19 R1 R2 P1 P2",
             "N1 N2"),
         IOStandard("3.3-V LVTTL")
     ),

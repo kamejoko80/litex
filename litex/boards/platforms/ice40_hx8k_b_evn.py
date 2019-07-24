@@ -43,13 +43,17 @@ _io = [
     ),
 
     ("spi_slave", 0,
+        # SPI slave part
         Subsignal("sck", Pins("T1"), IOStandard("LVCMOS33")),
         Subsignal("miso", Pins("T2"), IOStandard("LVCMOS33")),
         Subsignal("mosi", Pins("R2"), IOStandard("LVCMOS33")),
         Subsignal("csn", Pins("T3"), IOStandard("LVCMOS33")),
         Subsignal("irq", Pins("R3"), IOStandard("LVCMOS33")),
-    ),    
-    
+        # UART part
+        Subsignal("tx", Pins("T5"), IOStandard("LVCMOS33")),
+        Subsignal("rx", Pins("R5"), IOStandard("LVCMOS33")),
+    ),
+
     ("clk12", 0, Pins("J3"), IOStandard("LVCMOS33"))
 ]
 
@@ -68,7 +72,7 @@ class Platform(LatticePlatform):
     spiflash_clock_div = 2
     spiflash_total_size = int((32/8)*1024*1024) # 32Mbit
     spiflash_page_size = 256
-    spiflash_sector_size = 0x10000    
-    
+    spiflash_sector_size = 0x10000
+
     def __init__(self, device="ice40-hx8k", **kwargs):
         LatticePlatform.__init__(self, device + "-ct256", _io, **kwargs)
