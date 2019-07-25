@@ -84,7 +84,7 @@ int main(int i, char **c)
     printf("=============\n");
     spi_csn_inactive();
 
-    printf("Write registers\n");
+    printf("Write registers(single mode)\n");
 
     for(j = 0; j < 15; j++)
     {
@@ -109,6 +109,34 @@ int main(int i, char **c)
 
     spi_csn_inactive();
 
+
+    printf("Write registers(burst mode)\n");
+    spi_csn_active();
+    spi_byte_transfer(0x0A);
+    spi_byte_transfer(32);
+
+    for(j = 0; j < 15; j++)
+    {
+        spi_byte_transfer(0x5A);
+    }
+
+    spi_csn_inactive();
+
+    printf("Read back registers\n");
+
+    spi_csn_active();
+    spi_byte_transfer(0x0B);
+    spi_byte_transfer(32);
+
+    for(j = 0; j < 15; j++)
+    {
+       reg0 = spi_byte_transfer(0x00);
+       printf("Reg[%d] = %X\n", 32+j, reg0);
+    }
+
+    spi_csn_inactive();
+
+    /* Reading FIFO */
     for(j = 0; j < 20; j++)
     {
         spi_csn_active();
