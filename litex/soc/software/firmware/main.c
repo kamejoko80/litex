@@ -33,6 +33,41 @@ static void reboot(void)
 }
 #endif
 
+#ifdef SPI_MASTER_BASE
+uint16_t accel_read_reg(uint8_t addr);
+uint16_t accel_read_reg(uint8_t addr)
+{
+    uint8_t reg;
+
+    spi_csn_active();
+    spi_byte_transfer(0x0B);
+    spi_byte_transfer(addr);
+    reg = spi_byte_transfer(0x00);
+    spi_csn_inactive();
+
+    return reg;
+}
+
+void accel_read_fifo(void);
+void accel_read_fifo(void)
+{
+    uint8_t reg0;
+    uint16_t j;
+
+    spi_csn_active();
+    spi_byte_transfer(0x0D);
+    for(j = 0; j < 512; j++)
+    {
+        reg0 = spi_byte_transfer(0x00);
+        if(reg0 != 0)
+        {
+            //printf("FIFO data[%2d] = %X\n", j, reg0);
+        }
+    }
+    spi_csn_inactive();
+}
+#endif
+
 int main(int i, char **c)
 {
 	irq_setmask(0);
@@ -62,10 +97,41 @@ int main(int i, char **c)
 #ifdef SPI_MASTER_BASE
 #if 1 /* Test spi slave loop back */
 
-    uint16_t reg0, reg1, reg2, reg3;
+#if 1 /* Test accel behavior */
+    uint8_t reg0 = 0, reg1 = 1;
+
+    printf("Accel behavior test demo\n");
+    printf("\n");
+    printf("Read status registers\n");
+    printf("Press anykey to quit the program\n");
+
+    printf("FIFO_ENTRIES_L = %X\n", accel_read_reg(12));
+    printf("FIFO_ENTRIES_H = %X\n", accel_read_reg(13));
+
+    while(readchar_nonblock() == 0)
+    {
+        reg1 = accel_read_reg(11);
+        
+        if(reg0 != reg1)
+        {
+            printf("Status = 0x%X\n", reg1);
+            reg0 = reg1;
+
+            printf("FIFO_ENTRIES_L = %X\n", accel_read_reg(12));
+            printf("FIFO_ENTRIES_H = %X\n", accel_read_reg(13));
+
+            if(reg1 & 0x01) /* Data sample ready */
+            {
+                accel_read_fifo();
+            }
+        }
+    }
+
+#else /* Test registers, FIFO access */
+    uint8_t reg0, reg1, reg2, reg3;
     uint32_t j;
 
-    printf("SPI slave test demo\n");
+    printf("Accel register access test demo\n");
     printf("\n");
 
     printf("Read ID registers\n");
@@ -136,7 +202,7 @@ int main(int i, char **c)
 
     spi_csn_inactive();
 
-    /* Reading FIFO */
+    /* Read IDs manytimes */
     for(j = 0; j < 20; j++)
     {
         spi_csn_active();
@@ -156,25 +222,13 @@ int main(int i, char **c)
 
     printf("Done! Reading FIFO...\n");
 
-    spi_csn_active();
-    spi_byte_transfer(0x0D);
-
-    for(j = 0; j < 512; j++)
-    {
-        reg0 = spi_byte_transfer(0x00);
-        if(reg0 != 0)
-        {
-            printf("FIFO data = %X\n", reg0);
-        }
-    }
-
-    spi_csn_inactive();
+    accel_read_fifo();
 
     printf("Done! press anykey to quit the program\n");
 
     while(readchar_nonblock() == 0);
 
-
+#endif /* Test registers, FIFO access */
 
 #else /* Test ADC128S102 */
 
