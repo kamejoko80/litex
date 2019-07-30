@@ -48,6 +48,16 @@ uint16_t accel_read_reg(uint8_t addr)
     return reg;
 }
 
+void accel_write_reg(uint8_t addr, uint8_t value);
+void accel_write_reg(uint8_t addr, uint8_t value)
+{
+    spi_csn_active();
+    spi_byte_transfer(0x0A);
+    spi_byte_transfer(addr);
+    spi_byte_transfer(value);
+    spi_csn_inactive();
+}
+
 void accel_read_fifo(void);
 void accel_read_fifo(void)
 {
@@ -61,7 +71,7 @@ void accel_read_fifo(void)
         reg0 = spi_byte_transfer(0x00);
         if(reg0 != 0)
         {
-            //printf("FIFO data[%2d] = %X\n", j, reg0);
+            printf("FIFO data[%2d] = %X\n", j, reg0);
         }
     }
     spi_csn_inactive();
@@ -108,10 +118,18 @@ int main(int i, char **c)
     printf("FIFO_ENTRIES_L = %X\n", accel_read_reg(12));
     printf("FIFO_ENTRIES_H = %X\n", accel_read_reg(13));
 
+    /* Set mode fifo streamming */
+    printf("Setting FIFO stream mode\n");
+    accel_write_reg(40, 0x02); // FIFO_CONTROL = Stream mode
+    accel_write_reg(41, 150);  // FIFO_SAMPLES = 150
+    accel_write_reg(44, 0);    // FILTER_CTL   => ODR = 0 (12.5 Hz)    
+    accel_write_reg(45, 0x02); // POWER_CTL    = start measure
+
     while(readchar_nonblock() == 0)
     {
+        /* Read status register */
         reg1 = accel_read_reg(11);
-        
+
         if(reg0 != reg1)
         {
             printf("Status = 0x%X\n", reg1);
@@ -120,7 +138,7 @@ int main(int i, char **c)
             printf("FIFO_ENTRIES_L = %X\n", accel_read_reg(12));
             printf("FIFO_ENTRIES_H = %X\n", accel_read_reg(13));
 
-            if(reg1 & 0x01) /* Data sample ready */
+            if(reg1 & 0x04) /* Check water mark bit is set ? */
             {
                 accel_read_fifo();
             }
