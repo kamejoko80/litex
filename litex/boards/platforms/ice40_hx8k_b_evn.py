@@ -16,6 +16,8 @@ _io = [
     ("user_led", 6, Pins("B3"), IOStandard("LVCMOS33")),
     # ("user_led", 7, Pins("C3"), IOStandard("LVCMOS33")),
 
+    ("gpio_irq", 0, Pins("T7"), IOStandard("LVCMOS33")),
+
     ("serial", 0,
         Subsignal("rx", Pins("B10")),
         Subsignal("tx", Pins("B12"), Misc("PULLUP")),
@@ -49,6 +51,8 @@ _io = [
         Subsignal("mosi", Pins("R2"), IOStandard("LVCMOS33")),
         Subsignal("csn", Pins("T3"), IOStandard("LVCMOS33")),
         Subsignal("irq", Pins("R3"), IOStandard("LVCMOS33")),
+        Subsignal("int1", Pins("T6"), IOStandard("LVCMOS33")),
+        Subsignal("int2", Pins("R6"), IOStandard("LVCMOS33")),
         # UART part
         Subsignal("tx", Pins("T5"), IOStandard("LVCMOS33")),
         Subsignal("rx", Pins("R5"), IOStandard("LVCMOS33")),

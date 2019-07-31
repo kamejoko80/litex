@@ -16,6 +16,16 @@
 
 /* General address space functions */
 
+#ifdef GPIO_ISR_INTERRUPT
+void gpio_isr_init(void);
+void gpio_isr_init(void)
+{
+  gpio_isr_ev_pending_write(gpio_isr_ev_pending_read());
+  gpio_isr_ev_enable_write(1);
+  irq_setmask(irq_getmask() | (1 << GPIO_ISR_INTERRUPT));
+}
+#endif
+
 #ifdef SPI_MASTER_INTERRUPT
 void spi_master_isr_init(void);
 void spi_master_isr_init(void)
@@ -78,6 +88,25 @@ void accel_read_fifo(void)
 }
 #endif
 
+void gpio_irq (void);
+void gpio_irq (void)
+{
+#ifdef SPI_MASTER_BASE
+    uint8_t status;
+
+    /* Read status register */
+    status = accel_read_reg(11);
+    printf("Status = 0x%X\n", status);
+    printf("FIFO_ENTRIES_L = %X\n", accel_read_reg(12));
+    printf("FIFO_ENTRIES_H = %X\n", accel_read_reg(13));
+
+    if(status & 0x04) /* Check water mark bit is set ? */
+    {
+        accel_read_fifo();
+    }
+#endif
+}
+
 int main(int i, char **c)
 {
 	irq_setmask(0);
@@ -90,6 +119,10 @@ int main(int i, char **c)
 
 #ifdef SPI_MASTER_INTERRUPT
     spi_master_isr_init();
+#endif
+
+#ifdef GPIO_ISR_INTERRUPT
+    gpio_isr_init();
 #endif
 
 	printf("\n");
@@ -108,7 +141,6 @@ int main(int i, char **c)
 #if 1 /* Test spi slave loop back */
 
 #if 1 /* Test accel behavior */
-    uint8_t reg0 = 0, reg1 = 1;
 
     printf("Accel behavior test demo\n");
     printf("\n");
@@ -122,28 +154,12 @@ int main(int i, char **c)
     printf("Setting FIFO stream mode\n");
     accel_write_reg(40, 0x02); // FIFO_CONTROL = Stream mode
     accel_write_reg(41, 150);  // FIFO_SAMPLES = 150
-    accel_write_reg(44, 0);    // FILTER_CTL   => ODR = 0 (12.5 Hz)    
+    accel_write_reg(44, 0);    // FILTER_CTL   => ODR = 0 (12.5 Hz)
+    accel_write_reg(42, 0x04); // INTMAP1 with FIFO_WATERMARK interrupt (active high)
+    accel_write_reg(43, 0x84); // INTMAP2 with FIFO_WATERMARK interrupt (active low)
     accel_write_reg(45, 0x02); // POWER_CTL    = start measure
 
-    while(readchar_nonblock() == 0)
-    {
-        /* Read status register */
-        reg1 = accel_read_reg(11);
-
-        if(reg0 != reg1)
-        {
-            printf("Status = 0x%X\n", reg1);
-            reg0 = reg1;
-
-            printf("FIFO_ENTRIES_L = %X\n", accel_read_reg(12));
-            printf("FIFO_ENTRIES_H = %X\n", accel_read_reg(13));
-
-            if(reg1 & 0x04) /* Check water mark bit is set ? */
-            {
-                accel_read_fifo();
-            }
-        }
-    }
+    while(readchar_nonblock() == 0);
 
 #else /* Test registers, FIFO access */
     uint8_t reg0, reg1, reg2, reg3;
