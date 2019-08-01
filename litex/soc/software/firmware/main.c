@@ -153,8 +153,8 @@ int main(int i, char **c)
     /* Set mode fifo streamming */
     printf("Setting FIFO stream mode\n");
     accel_write_reg(40, 0x02); // FIFO_CONTROL = Stream mode
-    accel_write_reg(41, 200);  // FIFO_SAMPLES = 200
-    accel_write_reg(44, 0);    // FILTER_CTL   => ODR = 0 (12.5 Hz)
+    accel_write_reg(41, 60);   // FIFO_SAMPLES = 60 (should be = 3N)
+    accel_write_reg(44, 1);    // FILTER_CTL   => ODR = 0 (25 Hz)
     accel_write_reg(42, 0x04); // INTMAP1 with FIFO_WATERMARK interrupt (active high)
     accel_write_reg(43, 0x84); // INTMAP2 with FIFO_WATERMARK interrupt (active low)
     accel_write_reg(45, 0x02); // POWER_CTL    = start measure
