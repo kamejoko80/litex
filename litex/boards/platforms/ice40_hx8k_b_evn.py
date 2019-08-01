@@ -44,6 +44,14 @@ _io = [
         Subsignal("irq", Pins("C3"), IOStandard("LVCMOS33")),
     ),
 
+    ("spi_sdc", 0,
+        Subsignal("sclk", Pins("A1"), IOStandard("LVCMOS33")),
+        Subsignal("miso", Pins("A2"), IOStandard("LVCMOS33")),
+        Subsignal("mosi", Pins("B3"), IOStandard("LVCMOS33")),
+        Subsignal("csn", Pins("B4"), IOStandard("LVCMOS33")),
+        Subsignal("irq", Pins("B5"), IOStandard("LVCMOS33")),
+    ),
+
     ("spi_slave", 0,
         # SPI slave part
         Subsignal("sck", Pins("T1"), IOStandard("LVCMOS33")),
