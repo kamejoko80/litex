@@ -73,6 +73,31 @@
 /* Disk status */
 static volatile DSTATUS Stat = STA_NOINIT;
 
+__attribute__((weak)) DSTATUS SD_disk_initialize (BYTE pdrv)
+{
+    return STA_NOINIT;
+}
+
+__attribute__((weak)) DSTATUS SD_disk_status (BYTE pdrv)
+{
+    return STA_NOINIT;    
+}
+
+__attribute__((weak)) DRESULT SD_disk_read (BYTE pdrv, BYTE* buff, DWORD sector, UINT count)
+{
+    return RES_ERROR;
+}
+
+__attribute__((weak)) DRESULT SD_disk_write (BYTE pdrv, const BYTE* buff, DWORD sector, UINT count)
+{
+    return RES_ERROR;    
+}
+
+__attribute__((weak)) DRESULT SD_disk_ioctl (BYTE pdrv, BYTE cmd, void* buff)
+{
+    return RES_ERROR;    
+}
+
 /* USER CODE END DECL */
 
 /* Private function prototypes -----------------------------------------------*/
