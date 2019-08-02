@@ -13,6 +13,7 @@
 
 #include "boot.h"
 #include "spi.h"
+#include "fatfs.h"
 
 /* General address space functions */
 
@@ -107,6 +108,40 @@ void gpio_irq (void)
 #endif
 }
 
+FRESULT scan_files (
+    char* path        /* Start node to be scanned (***also used as work area***) */
+)
+{
+    FRESULT res;
+    DIR dir;
+    UINT i;
+    static FILINFO fno;
+
+    res = f_opendir(&dir, path);                       /* Open the directory */
+    if (res == FR_OK) {
+        for (;;) {
+            res = f_readdir(&dir, &fno);                   /* Read a directory item */
+            if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
+            if (fno.fattrib & AM_DIR) {                    /* It is a directory */
+                i = strlen(path);
+                sprintf(&path[i], "/%s", fno.fname);
+                res = scan_files(path);                    /* Enter the directory */
+                if (res != FR_OK) break;
+                path[i] = 0;
+            } else {                                       /* It is a file. */
+                printf("%s/%s\n", path, fno.fname);
+            }
+        }
+        f_closedir(&dir);
+    }
+    else
+    {
+        printf("Open failed res = %d\n", res);
+    }
+
+    return res;
+}
+
 int main(int i, char **c)
 {
 	irq_setmask(0);
@@ -118,11 +153,11 @@ int main(int i, char **c)
 #endif
 
 #ifdef SPI_MASTER_INTERRUPT
-    spi_master_isr_init();
+    //spi_master_isr_init();
 #endif
 
 #ifdef GPIO_ISR_INTERRUPT
-    gpio_isr_init();
+    //gpio_isr_init();
 #endif
 
 	printf("\n");
@@ -138,8 +173,37 @@ int main(int i, char **c)
 	printf("\n");
 
 #ifdef SPI_MASTER_BASE
-#if 1 /* Test spi slave loop back */
 
+    FATFS fs;
+    FRESULT res;
+    char buff[256];
+
+    printf("SD Card read demo\n");
+
+    MX_FATFS_Init();
+
+    extern void HAL_Delay(uint32_t n);
+    HAL_Delay(500);
+    
+    /* Mount SD Card */
+    res = f_mount(&fs, "", 0);
+	
+    if (res == FR_OK) {
+        printf("Mount sd card ok\n");
+        strcpy(buff, "/");
+        res = scan_files(buff);
+    }
+    else
+    {
+        printf("Mount sd card failed\n");
+    }
+
+    printf("Press anykey to exit\n");
+       
+    while(readchar_nonblock() == 0);
+
+#if 0
+#if 1 /* Test spi slave loop back */
 #if 1 /* Test accel behavior */
 
     printf("Accel behavior test demo\n");
@@ -290,6 +354,8 @@ int main(int i, char **c)
         printf("\r                                                                   ");
         printf("\r    \t");
     }
+
+#endif
 #endif
 #endif
 

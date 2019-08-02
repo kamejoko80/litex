@@ -23,7 +23,22 @@ void spi_irq (void);
 void spi_init(void)
 {
 
-#if 1 /* Test spi slave loopback */
+#if 1 /* SD card interface */
+
+    /*
+     * sclk = wb_clk /((SPI_DIV + 1) x 2)
+     *
+     */
+    SPI_DIV   = 0x01;  // fclk/4 ~ 12MHz
+    SPI_CTRL  = (1 << TX_NEG);
+    // SPI_CTRL |= (1 << IE);
+    SPI_CTRL |= 0x08;  // 8 byte transfer
+    SPI_SS    = 0x00;  // cns inactive
+
+#endif
+
+
+#if 0 /* Test spi slave loopback */
 
     /*
      * sclk = wb_clk /((SPI_DIV + 1) x 2)
@@ -35,7 +50,9 @@ void spi_init(void)
     SPI_CTRL |= 0x08;  // 8 byte transfer
     SPI_SS    = 0x00;  // cns inactive
 
-#else /* Test ADC128S102 */
+#endif
+    
+#if 0 /* Test ADC128S102 */
     /*
      * sclk = wb_clk /((SPI_DIV + 1) x 2)
      *

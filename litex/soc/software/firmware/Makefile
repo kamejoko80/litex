@@ -6,7 +6,15 @@ ifdef TFTP_SERVER_PORT
 CFLAGS += -DTFTP_SERVER_PORT=$(TFTP_SERVER_PORT)
 endif
 
-OBJECTS=isr.o main.o spi.o boot-helper-$(CPU).o
+OBJECTS = isr.o main.o spi.o boot-helper-$(CPU).o
+OBJECTS += fatfs.o \
+           fatfs_sd.o \
+           diskio.o \
+           user_diskio.o \
+           ff.o \
+           ccsbcs.o \
+           ff_gen_drv.o
+
 
 all: firmware.bin
 
