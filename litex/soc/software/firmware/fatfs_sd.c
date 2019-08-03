@@ -36,12 +36,14 @@ void HAL_Delay(uint32_t n)
 static void SELECT(void)
 {
     spi_csn_active();
+    HAL_Delay(1);
 }
 
 /* slave deselect */
 static void DESELECT(void)
 {
     spi_csn_inactive();
+    HAL_Delay(1);
 }
 
 /* SPI transmit a byte */
@@ -176,7 +178,7 @@ static bool SD_RxDataBlock(BYTE *buff, UINT len)
 #if _USE_WRITE == 1
 static bool SD_TxDataBlock(const uint8_t *buff, BYTE token)
 {
-	uint8_t resp;
+	uint8_t resp = 0;
 	uint8_t i = 0;
 
 	/* wait SD ready */
@@ -258,12 +260,12 @@ static BYTE SD_SendCmd(BYTE cmd, uint32_t arg)
 DSTATUS SD_disk_initialize(BYTE drv)
 {
 	uint8_t n, type, ocr[4];
-    
+
 	/* single drive, drv should be 0 */
 	if(drv) return STA_NOINIT;
 
 	/* no disk */
-	if(Stat & STA_NODISK) return Stat;
+	//if(Stat & STA_NODISK) return Stat;
 
 	/* power on */
 	SD_PowerOn();
@@ -294,6 +296,7 @@ DSTATUS SD_disk_initialize(BYTE drv)
                 to = 0;
 				do {
 					if (SD_SendCmd(CMD55, 0) <= 1 && SD_SendCmd(CMD41, 1UL << 30) == 0) break;
+					HAL_Delay(1);
 				} while ((to++ < 1000));
 
 				/* READ_OCR */
@@ -325,7 +328,7 @@ DSTATUS SD_disk_initialize(BYTE drv)
 				{
 					if (SD_SendCmd(CMD1, 0) == 0) break; /* CMD1 */
 				}
-
+				HAL_Delay(1);
 			} while ((to++ < 1000));
 
 			/* SET_BLOCKLEN */
@@ -343,6 +346,7 @@ DSTATUS SD_disk_initialize(BYTE drv)
 	if (type)
 	{
 		Stat &= ~STA_NOINIT;
+        return RES_OK;
 	}
 	else
 	{
@@ -357,7 +361,7 @@ DSTATUS SD_disk_initialize(BYTE drv)
 DSTATUS SD_disk_status(BYTE drv)
 {
 	if (drv) return STA_NOINIT;
-	return Stat;
+	return RES_OK;
 }
 
 /* read sector */
@@ -367,7 +371,7 @@ DRESULT SD_disk_read(BYTE pdrv, BYTE* buff, DWORD sector, UINT count)
 	if (pdrv || !count) return RES_PARERR;
 
 	/* no disk */
-	if (Stat & STA_NOINIT) return RES_NOTRDY;
+	//if (Stat & STA_NOINIT) return RES_NOTRDY;
 
 	/* convert to byte address */
 	if (!(CardType & CT_SD2)) sector *= 512;
@@ -409,10 +413,10 @@ DRESULT SD_disk_write(BYTE pdrv, const BYTE* buff, DWORD sector, UINT count)
 	if (pdrv || !count) return RES_PARERR;
 
 	/* no disk */
-	if (Stat & STA_NOINIT) return RES_NOTRDY;
+	//if (Stat & STA_NOINIT) return RES_NOTRDY;
 
 	/* write protection */
-	if (Stat & STA_PROTECT) return RES_WRPRT;
+	//if (Stat & STA_PROTECT) return RES_WRPRT;
 
 	/* convert to byte address */
 	if (!(CardType & CT_SD2)) sector *= 512;
@@ -491,7 +495,7 @@ DRESULT SD_disk_ioctl(BYTE drv, BYTE ctrl, void *buff)
 	else
 	{
 		/* no disk */
-		if (Stat & STA_NOINIT) return RES_NOTRDY;
+		//if (Stat & STA_NOINIT) return RES_NOTRDY;
 
 		SELECT();
 

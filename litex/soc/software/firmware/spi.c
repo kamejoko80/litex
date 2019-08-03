@@ -24,7 +24,6 @@ void spi_init(void)
 {
 
 #if 1 /* SD card interface */
-
     /*
      * sclk = wb_clk /((SPI_DIV + 1) x 2)
      *
@@ -39,7 +38,6 @@ void spi_init(void)
 
 
 #if 0 /* Test spi slave loopback */
-
     /*
      * sclk = wb_clk /((SPI_DIV + 1) x 2)
      *
@@ -51,7 +49,7 @@ void spi_init(void)
     SPI_SS    = 0x00;  // cns inactive
 
 #endif
-    
+
 #if 0 /* Test ADC128S102 */
     /*
      * sclk = wb_clk /((SPI_DIV + 1) x 2)
@@ -87,7 +85,7 @@ void delay(uint32_t n)
 void spi_csn_active(void)
 {
     SPI_SS = 0x01;
-    delay(10);
+    //delay(10);
 }
 
 void spi_csn_inactive(void)

@@ -108,38 +108,50 @@ void gpio_irq (void)
 #endif
 }
 
-FRESULT scan_files (
-    char* path        /* Start node to be scanned (***also used as work area***) */
-)
+void sdcard_test(void)
 {
-    FRESULT res;
-    DIR dir;
-    UINT i;
-    static FILINFO fno;
+    FATFS fs;
+    FIL fil;
+    char buffer[100];
 
-    res = f_opendir(&dir, path);                       /* Open the directory */
-    if (res == FR_OK) {
-        for (;;) {
-            res = f_readdir(&dir, &fno);                   /* Read a directory item */
-            if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
-            if (fno.fattrib & AM_DIR) {                    /* It is a directory */
-                i = strlen(path);
-                sprintf(&path[i], "/%s", fno.fname);
-                res = scan_files(path);                    /* Enter the directory */
-                if (res != FR_OK) break;
-                path[i] = 0;
-            } else {                                       /* It is a file. */
-                printf("%s/%s\n", path, fno.fname);
-            }
-        }
-        f_closedir(&dir);
-    }
-    else
+    MX_FATFS_Init();
+
+    extern void HAL_Delay(uint32_t n);
+    HAL_Delay(100);
+
+    printf("SD Card demo\n");
+
+	/* Mount SD Card */
+	if(f_mount(&fs, "", 0) != FR_OK)
     {
-        printf("Open failed res = %d\n", res);
+        printf("SD Card mount failed\n");
     }
 
-    return res;
+    HAL_Delay(100);
+
+	/* Open file to read */
+	if(f_open(&fil, "first.txt", FA_READ) != FR_OK)
+    {
+        printf("SD Card open file 2 error\n");
+    }
+
+	while(f_gets(buffer, sizeof(buffer), &fil))
+	{
+		/* SWV output */
+		printf("%s", buffer);
+	}
+
+	/* Close file */
+	if(f_close(&fil) != FR_OK)
+    {
+        printf("SD Card close file 2 error\n");
+    }
+
+	/* Unmount SDCARD */
+	if(f_mount(NULL, "", 1) != FR_OK)
+    {
+        printf("SD Card unmount error\n");
+    }
 }
 
 int main(int i, char **c)
@@ -174,32 +186,10 @@ int main(int i, char **c)
 
 #ifdef SPI_MASTER_BASE
 
-    FATFS fs;
-    FRESULT res;
-    char buff[256];
-
-    printf("SD Card read demo\n");
-
-    MX_FATFS_Init();
-
-    extern void HAL_Delay(uint32_t n);
-    HAL_Delay(500);
-    
-    /* Mount SD Card */
-    res = f_mount(&fs, "", 0);
-	
-    if (res == FR_OK) {
-        printf("Mount sd card ok\n");
-        strcpy(buff, "/");
-        res = scan_files(buff);
-    }
-    else
-    {
-        printf("Mount sd card failed\n");
-    }
+    sdcard_test();
 
     printf("Press anykey to exit\n");
-       
+
     while(readchar_nonblock() == 0);
 
 #if 0
