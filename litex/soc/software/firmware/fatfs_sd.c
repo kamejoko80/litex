@@ -36,14 +36,12 @@ void HAL_Delay(uint32_t n)
 static void SELECT(void)
 {
     spi_csn_active();
-    HAL_Delay(1);
 }
 
 /* slave deselect */
 static void DESELECT(void)
 {
     spi_csn_inactive();
-    HAL_Delay(1);
 }
 
 /* SPI transmit a byte */
