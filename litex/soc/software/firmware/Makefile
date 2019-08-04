@@ -7,7 +7,7 @@ CFLAGS += -DTFTP_SERVER_PORT=$(TFTP_SERVER_PORT)
 endif
 
 OBJECTS = isr.o main.o spi.o boot-helper-$(CPU).o
-OBJECTS += fatfs_sd.o
+OBJECTS += fatfs_sd.o app.o
 
 all: firmware.bin
 

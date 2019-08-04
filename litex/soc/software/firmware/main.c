@@ -108,52 +108,6 @@ void gpio_irq (void)
 #endif
 }
 
-void sdcard_test(void)
-{
-    FATFS fs;
-    FIL fil;
-    char buffer[100];
-
-    MX_FATFS_Init();
-
-    extern void HAL_Delay(uint32_t n);
-    HAL_Delay(100);
-
-    printf("SD Card demo\n");
-
-	/* Mount SD Card */
-	if(f_mount(&fs, "", 0) != FR_OK)
-    {
-        printf("SD Card mount failed\n");
-    }
-
-    HAL_Delay(100);
-
-	/* Open file to read */
-	if(f_open(&fil, "first.txt", FA_READ) != FR_OK)
-    {
-        printf("SD Card open file 2 error\n");
-    }
-
-	while(f_gets(buffer, sizeof(buffer), &fil))
-	{
-		/* SWV output */
-		printf("%s", buffer);
-	}
-
-	/* Close file */
-	if(f_close(&fil) != FR_OK)
-    {
-        printf("SD Card close file 2 error\n");
-    }
-
-	/* Unmount SDCARD */
-	if(f_mount(NULL, "", 1) != FR_OK)
-    {
-        printf("SD Card unmount error\n");
-    }
-}
-
 int main(int i, char **c)
 {
 	irq_setmask(0);
@@ -186,7 +140,8 @@ int main(int i, char **c)
 
 #ifdef SPI_MASTER_BASE
 
-    sdcard_test();
+    extern void main_app(void);
+    main_app();
 
     printf("Press anykey to exit\n");
 
