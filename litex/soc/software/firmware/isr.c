@@ -45,6 +45,25 @@ void isr(void)
 }
 #else
 
+#ifdef ACCEL_INTERRUPT
+extern void accel_irq (void);
+void accel_interrupt(void);
+void accel_interrupt(void)
+{
+  unsigned int status;
+
+  status = accel_ev_pending_read();
+
+  if( status & 1 )
+  {
+    accel_irq();
+    accel_ev_pending_write(1);
+  }
+
+  accel_ev_enable_write(1);
+}
+#endif
+
 #ifdef SPI_MASTER_INTERRUPT
 extern void spi_irq (void);
 void spi_master_interrupt(void);
@@ -109,6 +128,11 @@ void isr(void)
 
     if(irqs & (1 << UART_INTERRUPT))
         uart_isr();
+
+#ifdef ACCEL_INTERRUPT
+    if(irqs & (1 << ACCEL_INTERRUPT))
+        accel_interrupt();
+#endif
 
 #ifdef CAN_CTRL_INTERRUPT
     if(irqs & (1 << CAN_CTRL_INTERRUPT))

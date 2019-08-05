@@ -16,6 +16,15 @@
 #include "fatfs.h"
 
 /* General address space functions */
+#ifdef ACCEL_INTERRUPT
+void accel_isr_init(void);
+void accel_isr_init(void)
+{
+  accel_ev_pending_write(accel_ev_pending_read());
+  accel_ev_enable_write(1);
+  irq_setmask(irq_getmask() | (1 << ACCEL_INTERRUPT));
+}
+#endif
 
 #ifdef GPIO_ISR_INTERRUPT
 void gpio_isr_init(void);

@@ -45,15 +45,25 @@ _io = [
     #),
 
     ("spi", 0,
+        Subsignal("sclk", Pins("R1"), IOStandard("3.3-V LVTTL")), # U8 7
+        Subsignal("miso", Pins("P1"), IOStandard("3.3-V LVTTL")), # U8 9
+        Subsignal("mosi", Pins("N1"), IOStandard("3.3-V LVTTL")), # U8 11
+        Subsignal("csn",  Pins("M1"), IOStandard("3.3-V LVTTL")), # U8 13
+        Subsignal("irq",  Pins("J1"), IOStandard("3.3-V LVTTL"))  # U8 15
+    ),
+
+    ("spi_slave", 0,
         # SPI slave part
-        Subsignal("sck", Pins("AA16"), IOStandard("3.3-V LVTTL")), # U8 13 -> PA5
+        Subsignal("sck",  Pins("AA16"), IOStandard("3.3-V LVTTL")), # U8 13 -> PA5
         Subsignal("miso", Pins("AB16"), IOStandard("3.3-V LVTTL")), # U8 14 -> PA6
         Subsignal("mosi", Pins("AA17"), IOStandard("3.3-V LVTTL")), # U8 15 -> PA7
-        Subsignal("csn", Pins("AB17"), IOStandard("3.3-V LVTTL")),  # U8 16 -> PA4
-        Subsignal("irq", Pins("AA18"), IOStandard("3.3-V LVTTL")),  # U8 17
+        Subsignal("csn",  Pins("AB17"), IOStandard("3.3-V LVTTL")), # U8 16 -> PA4
+        Subsignal("irq",  Pins("AA18"), IOStandard("3.3-V LVTTL")), # U8 17
+        Subsignal("int1", Pins("AA19"), IOStandard("3.3-V LVTTL")), # U8 19
+        Subsignal("int2", Pins("AB19"), IOStandard("3.3-V LVTTL")), # U8 20
         # UART part
-        Subsignal("tx", Pins("N20"), IOStandard("3.3-V LVTTL")),  # U8 16 -> PA4
-        Subsignal("rx", Pins("M20"), IOStandard("3.3-V LVTTL")),  # U8 17
+        Subsignal("tx",   Pins("N20"), IOStandard("3.3-V LVTTL")),  # U8 16 -> PA4
+        Subsignal("rx",   Pins("M20"), IOStandard("3.3-V LVTTL")),  # U8 17
     ),
 
     ("sdram_clock", 0, Pins("Y6"), IOStandard("3.3-V LVTTL")),

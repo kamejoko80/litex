@@ -59,7 +59,7 @@ class BaseSoC(SoCCore):
         SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
                          with_uart=True,
                          integrated_rom_size=0,
-                         integrated_sram_size=6144,
+                         integrated_sram_size=4096,
                          integrated_main_ram_size=0,
                          **kwargs)
 
