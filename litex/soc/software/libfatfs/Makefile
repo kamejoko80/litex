@@ -1,7 +1,7 @@
 include ../include/generated/variables.mak
 include $(SOC_DIRECTORY)/software/common.mak
 
-OBJECTS = diskio.o fatfs.o ff.o ff_gen_drv.o user_diskio.o
+OBJECTS = diskio.o fatfs.o ff.o ff_gen_drv.o user_diskio.o ccsbcs.o
 
 all: libfatfs.a
 
