@@ -11,26 +11,23 @@
 
 /* This variable contains sample set */
 uint16_t g_sample[3];
+volatile bool g_sendflag;
 
 #ifdef CSR_ACCEL_BASE
 void csr_write_samples(uint16_t x, uint16_t y, uint16_t z)
-{
-    static uint32_t sampleset = 0;
-    
-    /* Wait for free FIFO */
-    while(accel_soc2ip_full_read());
-    
+{    
     accel_soc2ip_dx_write(x);
     accel_soc2ip_dy_write(y);
     accel_soc2ip_dz_write(z);
-    accel_soc2ip_wr_write(0);
-    accel_soc2ip_wr_write(1);
-    accel_soc2ip_wr_write(0);
-    sampleset++;
+    
+    /* Wait for free FIFO */
+    while(accel_soc2ip_full_read());
+    accel_soc2ip_we_write(0);
+    accel_soc2ip_we_write(1); 
+    accel_soc2ip_we_write(0);
     
     /* Wait until done */
-    while(!accel_soc2ip_done_read());
-    //printf("write done: %d\n", sampleset);
+    while(!accel_soc2ip_done_read());    
 }
 #endif
 
@@ -122,9 +119,7 @@ void accel_data_read(void)
 {
     FATFS fs;
     FIL fil;
-    char buffer[100];
-    //int i = 0;
-    
+    char buffer[100];  
     char *substr;
     
 	/* Mount SD Card */
@@ -143,18 +138,21 @@ void accel_data_read(void)
 
 #ifdef ACCEL_INTERRUPT
     /* Enable eccel interrupt */
-    //extern void accel_isr_init(void);
-    //accel_isr_init();
+    extern void accel_isr_init(void);
+    accel_isr_init();
 #endif
     
-    printf("Data is ready for sending\n");
+    printf("Data sending...\n");
     
 	while(f_gets(buffer, sizeof(buffer), &fil) && (readchar_nonblock() == 0))
 	{
         substr = (char *)strchr(buffer, ',');
         convert_to_sample_set(substr);
         //printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
-        csr_write_samples(g_sample[0], g_sample[1], g_sample[2]);
+      
+        /* Just wating for interrupt complete */    
+        g_sendflag = true;
+        while(g_sendflag);
 	}
 
 	/* Close file */
@@ -178,12 +176,14 @@ void main_app (void)
     printf("SD Card demo\n");
 
     accel_data_read();
-
+    
 }
 
 #ifdef CSR_ACCEL_BASE
 void accel_irq (void)
 {
-    //printf("accel_irq\n");
+   csr_write_samples(g_sample[0], g_sample[1], g_sample[2]);
+   //printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
+   g_sendflag = false;   
 }
 #endif
