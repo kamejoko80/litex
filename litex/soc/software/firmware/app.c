@@ -21,13 +21,13 @@ void csr_write_samples(uint16_t x, uint16_t y, uint16_t z)
     accel_soc2ip_dz_write(z);
     
     /* Wait for free FIFO */
-    while(accel_soc2ip_full_read());
+    while(accel_soc2ip_full_read() && (readchar_nonblock() == 0));
     accel_soc2ip_we_write(0);
     accel_soc2ip_we_write(1); 
     accel_soc2ip_we_write(0);
     
     /* Wait until done */
-    while(!accel_soc2ip_done_read());    
+    while(!accel_soc2ip_done_read() && (readchar_nonblock() == 0));    
 }
 #endif
 
@@ -152,7 +152,7 @@ void accel_data_read(void)
       
         /* Just wating for interrupt complete */    
         g_sendflag = true;
-        while(g_sendflag);
+        while(g_sendflag && (readchar_nonblock() == 0));
 	}
 
 	/* Close file */
