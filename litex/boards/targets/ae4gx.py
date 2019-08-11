@@ -44,13 +44,13 @@ class _CRG(Module):
             self.cd_sys.rst.eq(~rst_n),
         ]
 
-        # sys_clk pll setting (target 200MHz)
+        # sys_clk pll setting (target 50MHz)
         # self.specials += \
             # Instance("ALTPLL",
                 # p_BANDWIDTH_TYPE="AUTO",
-                # p_CLK0_DIVIDE_BY=1,
+                # p_CLK0_DIVIDE_BY=2,
                 # p_CLK0_DUTY_CYCLE=50e0,
-                # p_CLK0_MULTIPLY_BY=2,
+                # p_CLK0_MULTIPLY_BY=1,
                 # p_CLK0_PHASE_SHIFT="0",
                 # p_COMPENSATE_CLOCK="CLK0",
                 # p_INCLK0_INPUT_FREQUENCY=20000e0,
@@ -73,8 +73,9 @@ class BaseSoC(SoCCore):
         platform = ae4gx.Platform()
         SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
                          with_uart=True,
-                         integrated_rom_size=0x20000,      # 128KB
-                         integrated_main_ram_size=0x10000, # 64KB
+                         integrated_rom_size=0x20000,  # 128KB
+                         integrated_sram_size=0x10000, # 64KB
+                         integrated_main_ram_size=0,
                          **kwargs)
 
         self.submodules.crg = _CRG(platform)

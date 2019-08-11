@@ -28,7 +28,7 @@ void spi_init(void)
      * sclk = wb_clk /((SPI_DIV + 1) x 2)
      *
      */
-    SPI_DIV   = 0x01;  // fclk/2 ~ 24MHz
+    SPI_DIV   = 0x03;  // fclk/8 ~ 12MHz
     SPI_CTRL  = (1 << TX_NEG);
     // SPI_CTRL |= (1 << IE);
     SPI_CTRL |= 0x08;  // 8 byte transfer

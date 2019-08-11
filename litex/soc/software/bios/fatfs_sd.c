@@ -21,7 +21,7 @@ extern uint16_t spi_byte_transfer(uint8_t byte);
  * SPI functions
  **************************************/
 
-#define CPU_FREQ (48000000)
+#define CPU_FREQ (100000000)
 
 void HAL_Delay(uint32_t n)
 {
@@ -88,7 +88,7 @@ static uint8_t SD_ReadyWait(void)
     to = 0;
 	do {
 		res = SPI_RxByte();
-        HAL_Delay(1);
+		HAL_Delay(10);
 	} while ((res != 0xFF) && (to++ < 500));
 
 	return res;
@@ -124,6 +124,7 @@ static void SD_PowerOn(void)
 	while ((SPI_RxByte() != 0x01) && cnt)
 	{
 		cnt--;
+        HAL_Delay(10);
 	}
 
 	DESELECT();
@@ -154,8 +155,7 @@ static bool SD_RxDataBlock(BYTE *buff, UINT len)
     to = 0;
 	do {
 		token = SPI_RxByte();
-        HAL_Delay(1);
-	} while((token == 0xFF) && (to++ < 200));
+	} while((token == 0xFF) && (to++ < 2000));
 
 	/* invalid response */
 	if(token != 0xFE) return FALSE;
@@ -242,7 +242,7 @@ static BYTE SD_SendCmd(BYTE cmd, uint32_t arg)
 	if (cmd == CMD12) SPI_RxByte();
 
 	/* receive response */
-	uint8_t n = 10;
+	uint32_t n = 10000;
 	do {
 		res = SPI_RxByte();
 	} while ((res & 0x80) && --n);
