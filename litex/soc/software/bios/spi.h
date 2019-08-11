@@ -14,7 +14,7 @@
 #define SPI_TX3     (*(volatile uint32_t *)(SPI_MASTER_BASE + 0x0C)) // Data TX3
 #define SPI_CTRL    (*(volatile uint32_t *)(SPI_MASTER_BASE + 0x10)) // Control register
 #define SPI_DIV     (*(volatile uint32_t *)(SPI_MASTER_BASE + 0x14)) // Clock divider
-#define SPI_SS      (*(volatile uint32_t *)(SPI_MASTER_BASE + 0x18)) // Slave select register 
+#define SPI_SS      (*(volatile uint32_t *)(SPI_MASTER_BASE + 0x18)) // Slave select register
 
 /* Bit definition */
 #define ASS      (13) //
@@ -28,7 +28,10 @@
 
 #ifdef SPI_MASTER_BASE
 void spi_init(void);
+void spi_csn_active(void);
+void spi_csn_inactive(void);
 uint16_t spi_adc_read(uint8_t chanel);
+uint16_t spi_byte_transfer(uint8_t byte);
 #endif
 
 #endif /* __SPI_H */

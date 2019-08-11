@@ -29,7 +29,7 @@ firmware.elf: $(FIRMWARE_DIRECTORY)/linker.ld $(OBJECTS)
 		../libbase/crt0-$(CPU)-ctr.o \
 		$(OBJECTS) \
 		-L../libnet \
-        -L../libfatfs \
+		-L../libfatfs \
 		-L../libbase \
 		-L../libcompiler_rt \
 		-lnet -lfatfs -lbase-nofloat -lcompiler_rt -Map=firmware.map

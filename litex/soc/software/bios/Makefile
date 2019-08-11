@@ -7,6 +7,7 @@ CFLAGS += -DTFTP_SERVER_PORT=$(TFTP_SERVER_PORT)
 endif
 
 OBJECTS=isr.o can.o spi.o main.o boot-helper-$(CPU).o boot.o
+OBJECTS += fatfs_sd.o app.o
 
 all: bios.bin
 
@@ -23,14 +24,15 @@ endif
 
 bios.elf: $(BIOS_DIRECTORY)/linker.ld $(OBJECTS)
 
-%.elf: ../libbase/crt0-$(CPU)-ctr.o ../libnet/libnet.a ../libbase/libbase-nofloat.a ../libcompiler_rt/libcompiler_rt.a
+%.elf: ../libbase/crt0-$(CPU)-ctr.o ../libnet/libnet.a ../libfatfs/libfatfs.a ../libbase/libbase-nofloat.a ../libcompiler_rt/libcompiler_rt.a
 	$(LD) $(LDFLAGS) -T $(BIOS_DIRECTORY)/linker.ld -N -o $@ \
 		../libbase/crt0-$(CPU)-ctr.o \
 		$(OBJECTS) \
 		-L../libnet \
+		-L../libfatfs \
 		-L../libbase \
 		-L../libcompiler_rt \
-		-lnet -lbase-nofloat -lcompiler_rt -Map=bios.map
+		-lnet -lfatfs -lbase-nofloat -lcompiler_rt -Map=bios.map
 ifneq ($(OS),Windows_NT)
 	chmod -x $@
 endif

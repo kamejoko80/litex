@@ -45,6 +45,25 @@ void isr(void)
 }
 #else
 
+#ifdef ACCEL_INTERRUPT
+extern void accel_irq (void);
+void accel_interrupt(void);
+void accel_interrupt(void)
+{
+  unsigned int status;
+
+  status = accel_ev_pending_read();
+
+  if( status & 1 )
+  {
+    accel_irq();
+    accel_ev_pending_write(1);
+  }
+
+  accel_ev_enable_write(1);
+}
+#endif
+
 #ifdef SPI_MASTER_INTERRUPT
 extern void spi_irq (void);
 void spi_master_interrupt(void);
@@ -54,32 +73,28 @@ void spi_master_interrupt(void)
 
   status = spi_master_ev_pending_read();
 
-  if( status & 1 ) 
+  if( status & 1 )
   {
     spi_irq();
     spi_master_ev_pending_write(1);
-  } 
+  }
 
-  spi_master_ev_enable_write(1); 
+  spi_master_ev_enable_write(1);
 }
 #endif
-    
+
 #ifdef GPIO_ISR_INTERRUPT
-void gpio_isr_interrupt(void); 
-void gpio_isr_interrupt(void) 
+extern void gpio_irq (void);
+void gpio_isr_interrupt(void);
+void gpio_isr_interrupt(void)
 {
   unsigned int status;
 
   status = gpio_isr_ev_pending_read(); // you don't need to do this if you just have one interrupt source
-  
-  // gpio_isr_ev_pending_write(1);     // You'd do this if you just had one interrupt
 
   if( status & 1 ) {
-    printf("Hi! I got interrupt 1\n");
+    gpio_irq();
     gpio_isr_ev_pending_write(1);    // clear the interrupt so it doesn't keep on firing and wedge the CPU
-  } else if( status & 2 ) {
-    printf("Hi! I got interrupt 2\n");
-    gpio_isr_ev_pending_write(2);
   }
 
   gpio_isr_ev_enable_write(1);  // re-enable the event handler so we can catch the interrupt again
@@ -94,13 +109,13 @@ void can_ctrl_interrupt(void)
 
   status = can_ctrl_ev_pending_read(); // you don't need to do this if you just have one interrupt source
 
-  if( status & 1 ) 
+  if( status & 1 )
   {
     printf("Can ctrl interrupt\r\n");
     can_ctrl_ev_pending_write(1);     // clear the interrupt so it doesn't keep on firing and wedge the CPU
-  } 
+  }
 
-  can_ctrl_ev_enable_write(1);        // re-enable the event handler so we can catch the interrupt again    
+  can_ctrl_ev_enable_write(1);        // re-enable the event handler so we can catch the interrupt again
 }
 #endif
 
@@ -113,10 +128,15 @@ void isr(void)
 
     if(irqs & (1 << UART_INTERRUPT))
         uart_isr();
-    
+
+#ifdef ACCEL_INTERRUPT
+    if(irqs & (1 << ACCEL_INTERRUPT))
+        accel_interrupt();
+#endif
+
 #ifdef CAN_CTRL_INTERRUPT
     if(irqs & (1 << CAN_CTRL_INTERRUPT))
-        can_ctrl_interrupt();    
+        can_ctrl_interrupt();
 #endif
 
 #ifdef GPIO_ISR_INTERRUPT

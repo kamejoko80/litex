@@ -20,16 +20,27 @@
 #include "can.h"
 #include "spi.h"
 
+extern void main_app(void);
+
 #ifdef FLASH_BOOT_ADDRESS
 extern void flash_boot_raw(void);
 #endif
 
 /* General address space functions */
+#ifdef ACCEL_INTERRUPT
+void accel_isr_init(void);
+void accel_isr_init(void)
+{
+  accel_ev_pending_write(accel_ev_pending_read());
+  accel_ev_enable_write(1);
+  irq_setmask(irq_getmask() | (1 << ACCEL_INTERRUPT));
+}
+#endif
 
 #ifdef SPI_MASTER_INTERRUPT
 void spi_master_isr_init(void);
 void spi_master_isr_init(void)
-{  
+{
   spi_master_ev_pending_write(spi_master_ev_pending_read());
   spi_master_ev_enable_write(1);
   irq_setmask(irq_getmask() | (1 << SPI_MASTER_INTERRUPT));
@@ -39,7 +50,7 @@ void spi_master_isr_init(void)
 #ifdef GPIO_ISR_INTERRUPT
 void gpio_isr_init(void);
 void gpio_isr_init(void)
-{  
+{
   gpio_isr_ev_pending_write(gpio_isr_ev_pending_read());
   gpio_isr_ev_enable_write(1);
   irq_setmask(irq_getmask() | (1 << GPIO_ISR_INTERRUPT));
@@ -98,12 +109,12 @@ static void adder8(char *op1, char *op2)
 		printf("incorrect op1 value\n");
 		return;
 	}
-    
+
 	opr2 = strtoul(op2, &c, 0);
 	if(*c != 0) {
 		printf("incorrect op2 value\n");
 		return;
-	} 
+	}
 
     adder8_op1_write(opr1);
     adder8_op2_write(opr2);
@@ -125,7 +136,7 @@ static void my_uart_put_char(char c)
 static void my_uart_print(char *message)
 {
     int i;
-    
+
     for(i=0; i<strlen(message); i++)
     {
         my_uart_put_char(message[i]);
@@ -148,7 +159,7 @@ static void canregs(void)
 static void delay(uint32_t n)
 {
     uint32_t i, j;
-    
+
     for(i=1; i<=n;i++)
     {
         for(j=0;j<100000;j++);
@@ -158,51 +169,51 @@ static void delay(uint32_t n)
 static void basic_can_self_test_init(void)
 {
     // Enter basic can mode
-    CDR = 0x03; 
-    
+    CDR = 0x03;
+
     // Enter reset mode, enable transmit interrupt
     CR = (1 << CR_RR) | ( 1<< CR_TIE);
- 
+
     // Can baudrate setting
-    BTR0 = 0x09;  
+    BTR0 = 0x09;
     BTR1 = 0x2F;
- 
+
     // Clear TX, RX error counter
     EWL   = 0xFF;
-    RXERR = 0x00;    
+    RXERR = 0x00;
     TXERR = 0x00;
- 
+
     // Set Acceptance Code and Acceptance Mask registers
     ACR = 0xFF; // acceptance code
     AMR = 0xFF; // acceptance mask
 
     // Switch-off reset mode
-    CR &= ~(1 << CR_RR);  // reset_off, all irqs enabled.   
+    CR &= ~(1 << CR_RR);  // reset_off, all irqs enabled.
 }
 
 static void basic_can_clr_tx_rx_error(void)
 {
     // Enter reset mode
     CR |= (1 << CR_RR);
-   
+
     // Clear TX, RX error counter
     EWL = 0xFF;
-    RXERR = 0x00;    
-    TXERR = 0x00;   
-   
+    RXERR = 0x00;
+    TXERR = 0x00;
+
     // Switch-off reset mode
     CR &= ~(1 << CR_RR);
 }
 
 static void basic_can_self_test(void)
-{   
-    static uint32_t timeout; 
-    
+{
+    static uint32_t timeout;
+
     basic_can_self_test_init();
-    
-    /* Wait for transmit buffer ready */   
+
+    /* Wait for transmit buffer ready */
     while((SR & (1 << TBS))==0);
-    
+
     TX_DATA_0 = 0x55; // Writing ID[10:3] = 0x55
     TX_DATA_1 = 0x07; // Writing ID[2:0] = 0x3, rtr = 0, length = 7
     TX_DATA_2 = 0xAA; // data byte 1
@@ -215,7 +226,7 @@ static void basic_can_self_test(void)
     TX_DATA_9 = 0x00; // data byte 8
 
     // Transmit, receive request
-	CMR |= (1 << TR); 
+	CMR |= (1 << TR);
 
     // Wait for trasmition complete
     timeout = 0;
@@ -237,8 +248,8 @@ static void basic_can_self_test(void)
 }
 
 static void can_transmit_demo(void)
-{    
-   basic_can_self_test();   
+{
+   basic_can_self_test();
    printf("Can sent\r\n");
 }
 #endif
@@ -479,22 +490,23 @@ static void help(void)
 	puts("mr         - read address space");
     puts("mrb        - readb address space");
 	puts("mw         - write address space");
-	puts("mwb        - writeb address space");    
+	puts("mwb        - writeb address space");
 	puts("mc         - copy address space");
 	puts("");
 	puts("crc        - compute CRC32 of a part of the address space");
 	puts("ident      - display identifier");
 	puts("");
+    puts("accel      - start accel simulator");
 #ifdef CAN_CTRL_BASE
     puts("canregs    - dump can controller registers");
     puts("candemo    - run sja1000 can demo");
-#endif    
+#endif
 #ifdef CSR_ADDER8_BASE
     puts("adder8     - Adder 8bit demo");
 #endif
 #ifdef SPI_MASTER_BASE
     puts("adc        - ADC read");
-#endif    
+#endif
 #ifdef CSR_CTRL_BASE
 	puts("reboot     - reset processor");
 #endif
@@ -504,7 +516,7 @@ static void help(void)
 	puts("serialboot - boot via SFL");
 #ifdef FLASH_BOOT_ADDRESS
 	puts("flashboot  - boot from flash");
-    puts("fbraw      - boot from fash without integrity checking"); 
+    puts("fbraw      - boot from fash without integrity checking");
 #endif
 #ifdef ROM_BOOT_ADDRESS
 	puts("romboot    - boot from embedded rom");
@@ -551,16 +563,17 @@ static void do_command(char *c)
 	else if(strcmp(token, "mc") == 0) mc(get_token(&c), get_token(&c), get_token(&c));
 	else if(strcmp(token, "crc") == 0) crc(get_token(&c), get_token(&c));
 	else if(strcmp(token, "ident") == 0) ident();
+	else if(strcmp(token, "accel") == 0) main_app();
 #ifdef CAN_CTRL_BASE
 	else if(strcmp(token, "canregs") == 0) canregs();
-	else if(strcmp(token, "candemo") == 0) can_transmit_demo();    
-#endif    
+	else if(strcmp(token, "candemo") == 0) can_transmit_demo();
+#endif
 #ifdef CSR_ADDER8_BASE
 	else if(strcmp(token, "adder8") == 0) adder8(get_token(&c), get_token(&c));
 #endif
 #ifdef SPI_MASTER_BASE
 	else if(strcmp(token, "adc") == 0) adc_read(get_token(&c));
-#endif       
+#endif
 #ifdef L2_SIZE
 	else if(strcmp(token, "flushl2") == 0) flush_l2_cache();
 #endif
@@ -715,7 +728,7 @@ int main(int i, char **c)
     can_ctrl_isr_init();
 #endif
 
-#ifdef GPIO_ISR_INTERRUPT 
+#ifdef GPIO_ISR_INTERRUPT
     gpio_isr_init();
 #endif
 
@@ -784,10 +797,10 @@ int main(int i, char **c)
 	}
 
 	printf("--============= \e[1mConsole\e[0m ================--\n");
-    
+
 #ifdef CSR_MY_UART_BASE
     my_uart_print("HELLO RISC_V\r\n");
-#endif    
+#endif
 
 	while(1) {
 		putsnonl("\e[1mBIOS>\e[0m ");
