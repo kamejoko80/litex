@@ -720,6 +720,10 @@ int main(int i, char **c)
     spi_init();
 #endif
 
+#ifdef ACCEL_INTERRUPT
+    accel_isr_init();
+#endif
+
 #ifdef SPI_MASTER_INTERRUPT
     spi_master_isr_init();
 #endif

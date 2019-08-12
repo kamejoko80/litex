@@ -14,6 +14,17 @@ uint16_t g_sample[3];
 volatile bool g_sendflag;
 
 #ifdef CSR_ACCEL_BASE
+
+void soc_ready(void)
+{
+    accel_soc2ip_st_write(1);
+}
+
+void soc_not_ready(void)
+{
+    accel_soc2ip_st_write(0);
+}
+
 void csr_write_samples(uint16_t x, uint16_t y, uint16_t z)
 {    
     accel_soc2ip_dx_write(x);
@@ -29,6 +40,13 @@ void csr_write_samples(uint16_t x, uint16_t y, uint16_t z)
     /* Wait until done */
     while(!accel_soc2ip_done_read() && (readchar_nonblock() == 0));    
 }
+
+#else
+
+void soc_ready(void){}
+void soc_not_ready(void){}    
+void csr_write_samples(uint16_t x, uint16_t y, uint16_t z){}
+
 #endif
 
 void convert_data(int16_t sample, uint16_t *val, uint8_t axis)
@@ -137,17 +155,13 @@ void accel_data_read(void)
     }
     else
     {
-        printf("open file succesfully\n");
+        printf("Open file succesfully\n");
     }
-
-#ifdef ACCEL_INTERRUPT
-    /* Enable eccel interrupt */
-    extern void accel_isr_init(void);
-    accel_isr_init();
-#endif
-    
+   
     printf("Data sending...\n");
-    
+  
+    soc_ready();
+  
 	while(f_gets(buffer, sizeof(buffer), &fil) && (readchar_nonblock() == 0))
 	{
         substr = (char *)strchr(buffer, ',');
@@ -158,7 +172,9 @@ void accel_data_read(void)
         g_sendflag = true;
         while(g_sendflag && (readchar_nonblock() == 0));
 	}
-
+    
+    soc_not_ready();
+    
 	/* Close file */
 	if(f_close(&fil) != FR_OK)
     {
@@ -169,7 +185,10 @@ void accel_data_read(void)
 	if(f_mount(NULL, "", 1) != FR_OK)
     {
         printf("SD Card unmount error\n");
-    }    
+    }
+
+    printf("Done\n");
+    
 }
 
 void main_app (void)
@@ -177,17 +196,29 @@ void main_app (void)
     /* Init Fatfs */
     MX_FATFS_Init();
     
-    printf("SD Card demo\n");
+    printf("Start ADXL362 accelerometer simulator\n");
 
     accel_data_read();
     
+    /* Reboot the SoC */
+    ctrl_reset_write(1);
+    while(1);
 }
 
 #ifdef CSR_ACCEL_BASE
 void accel_irq (void)
-{
-   csr_write_samples(g_sample[0], g_sample[1], g_sample[2]);
-   //printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
-   g_sendflag = false;   
+{ 
+    if(accel_soc2ip_irq_code_read() == 0x01)
+    {
+        /* Reboot the SoC */
+        ctrl_reset_write(1);
+        while(1);
+    }
+    else if(accel_soc2ip_irq_code_read() == 0x02)
+    {
+        csr_write_samples(g_sample[0], g_sample[1], g_sample[2]);
+        //printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
+        g_sendflag = false;    
+    }
 }
 #endif
