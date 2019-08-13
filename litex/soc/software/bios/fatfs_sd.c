@@ -3,6 +3,7 @@
 #define bool BYTE
 
 #include <stdint.h>
+#include <generated/csr.h>
 #include "diskio.h"
 #include "fatfs_sd.h"
 
@@ -12,10 +13,17 @@ static volatile DSTATUS Stat = STA_NOINIT;	/* Disk Status */
 static uint8_t CardType;                    /* Type 0:MMC, 1:SDC, 2:Block addressing */
 static uint8_t PowerFlag = 0;				/* Power flag */
 
+#ifdef SPI_MASTER_BASE
 extern void spi_init(void);
 extern void spi_csn_active(void);
 extern void spi_csn_inactive(void);
 extern uint16_t spi_byte_transfer(uint8_t byte);
+#else
+__attribute__((weak)) void spi_init(void){}
+__attribute__((weak)) void spi_csn_active(void){}
+__attribute__((weak)) void spi_csn_inactive(void){}
+__attribute__((weak)) uint16_t spi_byte_transfer(uint8_t byte) {return 0;}
+#endif
 
 /***************************************
  * SPI functions

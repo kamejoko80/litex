@@ -208,17 +208,8 @@ void main_app (void)
 #ifdef CSR_ACCEL_BASE
 void accel_irq (void)
 { 
-    if(accel_soc2ip_irq_code_read() == 0x01)
-    {
-        /* Reboot the SoC */
-        ctrl_reset_write(1);
-        while(1);
-    }
-    else if(accel_soc2ip_irq_code_read() == 0x02)
-    {
-        csr_write_samples(g_sample[0], g_sample[1], g_sample[2]);
-        //printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
-        g_sendflag = false;    
-    }
+    csr_write_samples(g_sample[0], g_sample[1], g_sample[2]);
+    //printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
+    g_sendflag = false;
 }
 #endif

@@ -496,7 +496,9 @@ static void help(void)
 	puts("crc        - compute CRC32 of a part of the address space");
 	puts("ident      - display identifier");
 	puts("");
+#ifdef PLATFORM_AE4GX
     puts("accel      - start accel simulator");
+#endif
 #ifdef CAN_CTRL_BASE
     puts("canregs    - dump can controller registers");
     puts("candemo    - run sja1000 can demo");
@@ -563,7 +565,9 @@ static void do_command(char *c)
 	else if(strcmp(token, "mc") == 0) mc(get_token(&c), get_token(&c), get_token(&c));
 	else if(strcmp(token, "crc") == 0) crc(get_token(&c), get_token(&c));
 	else if(strcmp(token, "ident") == 0) ident();
+#ifdef PLATFORM_AE4GX
 	else if(strcmp(token, "accel") == 0) main_app();
+#endif
 #ifdef CAN_CTRL_BASE
 	else if(strcmp(token, "canregs") == 0) canregs();
 	else if(strcmp(token, "candemo") == 0) can_transmit_demo();

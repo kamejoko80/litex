@@ -9,7 +9,10 @@ endif
 CPUFLAGS += -D$(PLATFORM) 
 
 OBJECTS=isr.o can.o spi.o main.o boot-helper-$(CPU).o boot.o
+
+ifneq ($(PLATFORM),PLATFORM_QMATECH)
 OBJECTS += fatfs_sd.o app.o
+endif
 
 all: bios.bin
 

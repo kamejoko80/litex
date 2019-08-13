@@ -42,8 +42,12 @@ class _CRG(Module):
         reset_delay = Signal(12, reset=4095)
         self.comb += [
             self.cd_por.clk.eq(self.cd_sys.clk),
+        ]
+
+        self.sync += [
             self.cd_sys.rst.eq(reset_delay != 0)
         ]
+
         self.sync.por += \
             If(reset_delay != 0,
                 reset_delay.eq(reset_delay - 1)

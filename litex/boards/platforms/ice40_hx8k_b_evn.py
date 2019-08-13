@@ -12,8 +12,8 @@ _io = [
     ("user_led", 2, Pins("A2"), IOStandard("LVCMOS33")),
     ("user_led", 3, Pins("A1"), IOStandard("LVCMOS33")),
     ("user_led", 4, Pins("C5"), IOStandard("LVCMOS33")),
-    ("user_led", 5, Pins("C4"), IOStandard("LVCMOS33")),
-    ("user_led", 6, Pins("B3"), IOStandard("LVCMOS33")),
+    # ("user_led", 5, Pins("C4"), IOStandard("LVCMOS33")),
+    # ("user_led", 6, Pins("B3"), IOStandard("LVCMOS33")),
     # ("user_led", 7, Pins("C3"), IOStandard("LVCMOS33")),
 
     ("gpio_irq", 0, Pins("T7"), IOStandard("LVCMOS33")),
@@ -61,6 +61,7 @@ _io = [
         Subsignal("irq", Pins("R3"), IOStandard("LVCMOS33")),
         Subsignal("int1", Pins("T6"), IOStandard("LVCMOS33")),
         Subsignal("int2", Pins("R6"), IOStandard("LVCMOS33")),
+        Subsignal("led", Pins("C4"), IOStandard("LVCMOS33")),
         # UART part
         Subsignal("tx", Pins("T5"), IOStandard("LVCMOS33")),
         Subsignal("rx", Pins("R5"), IOStandard("LVCMOS33")),

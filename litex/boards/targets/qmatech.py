@@ -14,11 +14,11 @@ from litedram.modules import IS42S16160
 from litedram.phy import GENSDRPHY
 
 # CRG ----------------------------------------------------------------------------------------------
-#                  _________ 
+#                  _________
 #                 |         |
-#     clk50 --|-->| ALT PLL |-----> sys_clk (100MHz) 
+#     clk50 --|-->| ALT PLL |-----> sys_clk (100MHz)
 #             |   |_________|
-#             |       
+#             |
 #             |-------------------> por_clk (50MHz)
 #
 #----------------------------------------------------------------------------------------------------
@@ -40,6 +40,9 @@ class _CRG(Module):
         self.sync.por += rst_n.eq(1)
         self.comb += [
             self.cd_por.clk.eq(clk50),
+        ]
+
+        self.sync += [
             self.cd_sys.rst.eq(~rst_n),
         ]
 
@@ -72,10 +75,11 @@ class BaseSoC(SoCCore):
         platform = qmatech.Platform()
         SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
                          with_uart=True,
-                         integrated_rom_size=0x9000,
-                         integrated_main_ram_size=0x800,
+                         integrated_rom_size=0x9000,  # 36KB
+                         integrated_sram_size=4096,   # 4KB
+                         integrated_main_ram_size=0,
                          **kwargs)
-        
+
         self.submodules.crg = _CRG(platform)
 
 # Build --------------------------------------------------------------------------------------------

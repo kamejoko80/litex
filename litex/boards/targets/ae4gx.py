@@ -41,6 +41,9 @@ class _CRG(Module):
         self.comb += [
             self.cd_sys.clk.eq(clk100),
             self.cd_por.clk.eq(clk100),
+        ]
+
+        self.sync += [
             self.cd_sys.rst.eq(~rst_n),
         ]
 

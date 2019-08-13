@@ -61,6 +61,7 @@ _io = [
         Subsignal("irq",  Pins("G14"), IOStandard("3.3-V LVTTL")),
         Subsignal("int1", Pins("G15"), IOStandard("3.3-V LVTTL")),
         Subsignal("int2", Pins("F17"), IOStandard("3.3-V LVTTL")),
+        Subsignal("led",  Pins("AA4"), IOStandard("3.3-V LVTTL")),
         # UART part
         Subsignal("tx",   Pins("D17"), IOStandard("3.3-V LVTTL")),
         Subsignal("rx",   Pins("E17"), IOStandard("3.3-V LVTTL")),
