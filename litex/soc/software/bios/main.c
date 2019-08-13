@@ -802,6 +802,10 @@ int main(int i, char **c)
 
 	printf("--============= \e[1mConsole\e[0m ================--\n");
 
+#ifdef PLATFORM_AE4GX
+    main_app();
+#endif
+
 #ifdef CSR_MY_UART_BASE
     my_uart_print("HELLO RISC_V\r\n");
 #endif

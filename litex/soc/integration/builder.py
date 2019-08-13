@@ -16,7 +16,7 @@ soc_software_packages = [
     "libcompiler_rt",
     "libbase",
     "libnet",
-    "libfatfs",    
+    "libfatfs",
     "bios"
 ]
 
@@ -71,6 +71,8 @@ class Builder:
             variables_contents.append("{}={}\n".format(k, _makefile_escape(v)))
         for k, v in cpu_interface.get_cpu_mak(self.soc.cpu):
             define(k, v)
+        # Distinguish platform name.
+        define("PLATFORM", "PLATFORM_" + self.soc.platform.name.upper())
         # Distinguish between LiteX and MiSoC.
         define("LITEX", "1")
         # Distinguish between applications running from main RAM and

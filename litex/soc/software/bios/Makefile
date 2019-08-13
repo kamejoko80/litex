@@ -6,6 +6,8 @@ ifdef TFTP_SERVER_PORT
 CFLAGS += -DTFTP_SERVER_PORT=$(TFTP_SERVER_PORT)
 endif
 
+CPUFLAGS += -D$(PLATFORM) 
+
 OBJECTS=isr.o can.o spi.o main.o boot-helper-$(CPU).o boot.o
 OBJECTS += fatfs_sd.o app.o
 
