@@ -6,6 +6,7 @@
 #include <uart.h>
 #include <console.h>
 #include <generated/csr.h>
+#include <generated/mem.h>
 #include "fatfs.h"
 #include "boot.h"
 
@@ -201,7 +202,7 @@ void main_app (void)
     accel_data_read();
     
     /* Reboot the SoC */
-    ctrl_reset_write(1);
+    //ctrl_reset_write(1);
     while(1);
 }
 

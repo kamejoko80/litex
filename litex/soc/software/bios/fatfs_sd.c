@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <generated/csr.h>
+#include <generated/mem.h>
 #include "diskio.h"
 #include "fatfs_sd.h"
 
@@ -18,7 +19,7 @@ extern void spi_init(void);
 extern void spi_csn_active(void);
 extern void spi_csn_inactive(void);
 extern uint16_t spi_byte_transfer(uint8_t byte);
-#else
+#else    
 __attribute__((weak)) void spi_init(void){}
 __attribute__((weak)) void spi_csn_active(void){}
 __attribute__((weak)) void spi_csn_inactive(void){}

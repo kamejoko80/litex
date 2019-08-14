@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <generated/csr.h>
+#include <generated/mem.h>
 #include "diskio.h"
 #include "fatfs_sd.h"
 
