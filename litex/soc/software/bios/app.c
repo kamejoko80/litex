@@ -169,7 +169,7 @@ void accel_data_read(void)
 	{
         substr = (char *)strchr(buffer, ',');
         convert_to_sample_set(substr);
-        //printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
+        printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
       
         /* Just wating for interrupt complete */    
         g_sendflag = true;
@@ -216,7 +216,7 @@ void main_app (void)
 void accel_irq (void)
 { 
     csr_write_samples(g_sample[0], g_sample[1], g_sample[2]);
-    printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
+    //printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
     g_sendflag = false;
 }
 #endif
