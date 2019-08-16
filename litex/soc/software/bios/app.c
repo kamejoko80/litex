@@ -33,13 +33,13 @@ void csr_write_samples(uint16_t x, uint16_t y, uint16_t z)
     accel_soc2ip_dz_write(z);
     
     /* Wait for free FIFO */
-    while(accel_soc2ip_full_read() && (readchar_nonblock() == 0));
+    while(accel_soc2ip_full_read());
     accel_soc2ip_we_write(0);
     accel_soc2ip_we_write(1); 
     accel_soc2ip_we_write(0);
     
     /* Wait until done */
-    while(!accel_soc2ip_done_read() && (readchar_nonblock() == 0));    
+    while(!accel_soc2ip_done_read());    
 }
 
 #else
@@ -88,9 +88,9 @@ void convert_data(int16_t sample, uint16_t *val, uint8_t axis)
 
 void reset_sample(void)
 {
-    g_sample[0] = 0;
-    g_sample[1] = 0x4000;
-    g_sample[2] = 0x8000;
+    g_sample[0] = 0x178;
+    g_sample[1] = 0x4053;
+    g_sample[2] = 0xB8FD;
 }
 
 bool convert_to_sample_set(char *str)
@@ -161,9 +161,11 @@ void accel_data_read(void)
    
     printf("Data sending...\n");
   
+    reset_sample();
+  
     soc_ready();
   
-	while(f_gets(buffer, sizeof(buffer), &fil) && (readchar_nonblock() == 0))
+	while(f_gets(buffer, sizeof(buffer), &fil))
 	{
         substr = (char *)strchr(buffer, ',');
         convert_to_sample_set(substr);
@@ -171,7 +173,7 @@ void accel_data_read(void)
       
         /* Just wating for interrupt complete */    
         g_sendflag = true;
-        while(g_sendflag && (readchar_nonblock() == 0));
+        while(g_sendflag);
 	}
     
     soc_not_ready();
@@ -199,7 +201,11 @@ void main_app (void)
     
     printf("Start ADXL362 accelerometer simulator\n");
 
-    accel_data_read();
+    /* Repeat sending data infinity */
+    while(1)
+    {
+        accel_data_read();
+    }
     
     /* Reboot the SoC */
     //ctrl_reset_write(1);
@@ -210,7 +216,7 @@ void main_app (void)
 void accel_irq (void)
 { 
     csr_write_samples(g_sample[0], g_sample[1], g_sample[2]);
-    //printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
+    printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
     g_sendflag = false;
 }
 #endif
