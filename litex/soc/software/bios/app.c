@@ -176,7 +176,7 @@ void accel_data_read(void)
         while(g_sendflag);
 	}
     
-    soc_not_ready();
+    //soc_not_ready();
     
 	/* Close file */
 	if(f_close(&fil) != FR_OK)
@@ -201,11 +201,8 @@ void main_app (void)
     
     printf("Start ADXL362 accelerometer simulator\n");
 
-    /* Repeat sending data infinity */
-    while(1)
-    {
-        accel_data_read();
-    }
+    /* Read data and send */
+    accel_data_read();
     
     /* Reboot the SoC */
     //ctrl_reset_write(1);
