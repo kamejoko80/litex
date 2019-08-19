@@ -810,6 +810,10 @@ int main(int i, char **c)
     main_app();
 #endif
 
+#ifdef PLATFORM_ICE40_HX8K_B_EVN
+    flash_boot_raw();
+#endif
+
 #ifdef CSR_MY_UART_BASE
     my_uart_print("HELLO RISC_V\r\n");
 #endif

@@ -88,9 +88,9 @@ void convert_data(int16_t sample, uint16_t *val, uint8_t axis)
 
 void reset_sample(void)
 {
-    g_sample[0] = 0x178;
-    g_sample[1] = 0x4053;
-    g_sample[2] = 0xB8FD;
+    g_sample[0] = 0;
+    g_sample[1] = 0x4000;
+    g_sample[2] = 0x8000;
 }
 
 bool convert_to_sample_set(char *str)
