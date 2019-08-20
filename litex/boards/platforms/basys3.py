@@ -22,7 +22,7 @@ _io = [
     ("user_led", 12, Pins("P3"),  IOStandard("LVCMOS33")),
     ("user_led", 13, Pins("N3"),  IOStandard("LVCMOS33")),
     ("user_led", 14, Pins("P1"),  IOStandard("LVCMOS33")),
-    ("user_led", 15, Pins("L1"),  IOStandard("LVCMOS33")),
+    #("user_led", 15, Pins("L1"),  IOStandard("LVCMOS33")),
 
     ("user_sw",  0,  Pins("V17"), IOStandard("LVCMOS33")),
     ("user_sw",  1,  Pins("V16"), IOStandard("LVCMOS33")),
@@ -50,10 +50,28 @@ _io = [
     ),
 
     ("spi", 0,
-        Subsignal("clk", Pins("F1")),
-        Subsignal("cs_n", Pins("C1")),
-        Subsignal("mosi", Pins("H1")),
-        Subsignal("miso", Pins("G1")),
+        Subsignal("sclk", Pins("A14")), # JB1
+        Subsignal("miso", Pins("A16")), # JB2
+        Subsignal("mosi", Pins("B15")), # JB3
+        Subsignal("csn", Pins("B16")),  # JB4
+        Subsignal("irq", Pins("A15")),  # JB7
+        IOStandard("LVCMOS33"),
+    ),
+
+    ("spi_slave", 0,
+        # SPI slave part
+        Subsignal("sck", Pins("J1")),   # JA1
+        Subsignal("miso", Pins("L2")),  # JA2
+        Subsignal("mosi", Pins("J2")),  # JA3
+        Subsignal("csn", Pins("G2")),   # JA4
+        Subsignal("int1", Pins("H1")),  # JA7
+        Subsignal("int2", Pins("K2")),  # JA8
+       #Subsignal("irq", Pins("H2")),   # JA9
+        Subsignal("led1", Pins("L1")),
+        Subsignal("led2", Pins("P1")),
+        # UART part
+        Subsignal("tx", Pins("H2")),    # JA9
+        Subsignal("rx", Pins("G3")),    # JA10
         IOStandard("LVCMOS33"),
     ),
 

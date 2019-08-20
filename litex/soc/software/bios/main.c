@@ -806,7 +806,7 @@ int main(int i, char **c)
 
 	printf("--============= \e[1mConsole\e[0m ================--\n");
 
-#ifdef PLATFORM_AE4GX
+#if defined(PLATFORM_AE4GX) || defined(PLATFORM_BASYS3)
     main_app();
 #endif
 
