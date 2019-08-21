@@ -7,21 +7,21 @@ from litex.build.xilinx import XilinxPlatform, VivadoProgrammer
 # IOs ----------------------------------------------------------------------------------------------
 
 _io = [
-    ("user_led", 0,  Pins("U16"), IOStandard("LVCMOS33")),
-    ("user_led", 1,  Pins("E19"), IOStandard("LVCMOS33")),
-    ("user_led", 2,  Pins("U19"), IOStandard("LVCMOS33")),
-    ("user_led", 3,  Pins("V19"), IOStandard("LVCMOS33")),
-    ("user_led", 4,  Pins("W18"), IOStandard("LVCMOS33")),
-    ("user_led", 5,  Pins("U15"), IOStandard("LVCMOS33")),
-    ("user_led", 6,  Pins("U14"), IOStandard("LVCMOS33")),
-    ("user_led", 7,  Pins("V14"), IOStandard("LVCMOS33")),
-    ("user_led", 8,  Pins("V13"), IOStandard("LVCMOS33")),
-    ("user_led", 9,  Pins("V3"),  IOStandard("LVCMOS33")),
-    ("user_led", 10, Pins("W3"),  IOStandard("LVCMOS33")),
-    ("user_led", 11, Pins("U3"),  IOStandard("LVCMOS33")),
-    ("user_led", 12, Pins("P3"),  IOStandard("LVCMOS33")),
-    ("user_led", 13, Pins("N3"),  IOStandard("LVCMOS33")),
-    ("user_led", 14, Pins("P1"),  IOStandard("LVCMOS33")),
+    #("user_led", 0,  Pins("U16"), IOStandard("LVCMOS33")),
+    #("user_led", 1,  Pins("E19"), IOStandard("LVCMOS33")),
+    #("user_led", 2,  Pins("U19"), IOStandard("LVCMOS33")),
+    #("user_led", 3,  Pins("V19"), IOStandard("LVCMOS33")),
+    #("user_led", 4,  Pins("W18"), IOStandard("LVCMOS33")),
+    #("user_led", 5,  Pins("U15"), IOStandard("LVCMOS33")),
+    #("user_led", 6,  Pins("U14"), IOStandard("LVCMOS33")),
+    #("user_led", 7,  Pins("V14"), IOStandard("LVCMOS33")),
+    #("user_led", 8,  Pins("V13"), IOStandard("LVCMOS33")),
+    #("user_led", 9,  Pins("V3"),  IOStandard("LVCMOS33")),
+    #("user_led", 10, Pins("W3"),  IOStandard("LVCMOS33")),
+    #("user_led", 11, Pins("U3"),  IOStandard("LVCMOS33")),
+    #("user_led", 12, Pins("P3"),  IOStandard("LVCMOS33")),
+    #("user_led", 13, Pins("N3"),  IOStandard("LVCMOS33")),
+    #("user_led", 14, Pins("P1"),  IOStandard("LVCMOS33")),
     #("user_led", 15, Pins("L1"),  IOStandard("LVCMOS33")),
 
     ("user_sw",  0,  Pins("V17"), IOStandard("LVCMOS33")),
@@ -67,8 +67,13 @@ _io = [
         Subsignal("int1", Pins("H1")),  # JA7
         Subsignal("int2", Pins("K2")),  # JA8
        #Subsignal("irq", Pins("H2")),   # JA9
-        Subsignal("led1", Pins("L1")),
-        Subsignal("led2", Pins("P1")),
+        Subsignal("led0", Pins("U16")), # LED0
+        Subsignal("led1", Pins("E19")), # LED1
+        Subsignal("led2", Pins("U19")), # LED2
+        Subsignal("led3", Pins("V19")), # LED3
+        Subsignal("led4", Pins("W18")), # LED4
+        Subsignal("led5", Pins("U15")), # LED5
+        Subsignal("led6", Pins("U14")), # LED6
         # UART part
         Subsignal("tx", Pins("H2")),    # JA9
         Subsignal("rx", Pins("G3")),    # JA10
