@@ -42,6 +42,7 @@ _io = [
     ("user_sw",  15, Pins("R2"),  IOStandard("LVCMOS33")),
 
     ("clk100", 0, Pins("W5"), IOStandard("LVCMOS33")),
+    ("clk", 0, Pins("W5"), IOStandard("LVCMOS33")), # Alias of clk100
 
     ("serial", 0,
         Subsignal("rx", Pins("B18")),
