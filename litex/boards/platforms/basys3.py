@@ -50,6 +50,12 @@ _io = [
         IOStandard("LVCMOS33")
     ),
 
+    ("serial_test", 0,
+        Subsignal("rx", Pins("K17")), # JC1
+        Subsignal("tx", Pins("M18")), # JC2
+        IOStandard("LVCMOS33")
+    ),
+
     ("spi", 0,
         Subsignal("sclk", Pins("A14")), # JB1
         Subsignal("miso", Pins("A16")), # JB2

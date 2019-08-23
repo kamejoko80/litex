@@ -10,8 +10,12 @@ CPUFLAGS += -D$(PLATFORM)
 
 OBJECTS=isr.o can.o spi.o sdram.o main.o boot-helper-$(CPU).o boot.o
 
-ifneq ($(PLATFORM),PLATFORM_QMATECH)
+ifneq ($(PLATFORM), $(filter $(PLATFORM),PLATFORM_QMATECH PLATFORM_ACCEL_TEST))
 OBJECTS += fatfs_sd.o app.o
+endif
+
+ifeq ($(PLATFORM), PLATFORM_ACCEL_TEST)
+OBJECTS += accel_test.o
 endif
 
 all: bios.bin

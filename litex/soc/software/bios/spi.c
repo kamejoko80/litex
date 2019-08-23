@@ -23,7 +23,8 @@ void spi_irq (void);
 void spi_init(void)
 {
 
-#if 1 /* SD card interface */
+/* SD card interface */
+#if defined(PLATFORM_AE4GX) || defined(PLATFORM_BASYS3) || defined(PLATFORM_ACCEL_SIM)
     /*
      * sclk = wb_clk /((SPI_DIV + 1) x 2)
      *
@@ -36,8 +37,8 @@ void spi_init(void)
 
 #endif
 
-
-#if 0 /* Test spi slave loopback */
+/* Test spi slave loopback */
+#if defined(PLATFORM_ACCEL_TEST)
     /*
      * sclk = wb_clk /((SPI_DIV + 1) x 2)
      *

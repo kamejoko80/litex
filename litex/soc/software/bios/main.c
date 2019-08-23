@@ -21,6 +21,7 @@
 #include "spi.h"
 
 extern void main_app(void);
+extern void accel_test(void);
 
 #ifdef FLASH_BOOT_ADDRESS
 extern void flash_boot_raw(void);
@@ -808,6 +809,10 @@ int main(int i, char **c)
 
 #if defined(PLATFORM_AE4GX) || defined(PLATFORM_BASYS3) || defined(PLATFORM_ACCEL_SIM)
     main_app();
+#endif
+
+#if defined(PLATFORM_ACCEL_TEST)
+    accel_test();
 #endif
 
 #ifdef PLATFORM_ICE40_HX8K_B_EVN
