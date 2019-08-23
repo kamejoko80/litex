@@ -64,6 +64,25 @@ void accel_interrupt(void)
 }
 #endif
 
+#ifdef MBX_RCV_INTERRUPT
+extern void mbx_rcv_irq (void);
+void mbx_rcv_interrupt(void);
+void mbx_rcv_interrupt(void)
+{
+  unsigned int status;
+
+  status = mbx_rcv_ev_pending_read();
+
+  if( status & 1 )
+  {
+    mbx_rcv_irq();
+    mbx_rcv_ev_pending_write(1);
+  }
+
+  mbx_rcv_ev_enable_write(1);
+}
+#endif
+
 #ifdef SPI_MASTER_INTERRUPT
 extern void spi_irq (void);
 void spi_master_interrupt(void);
@@ -132,6 +151,11 @@ void isr(void)
 #ifdef ACCEL_INTERRUPT
     if(irqs & (1 << ACCEL_INTERRUPT))
         accel_interrupt();
+#endif
+
+#ifdef MBX_RCV_INTERRUPT
+    if(irqs & (1 << MBX_RCV_INTERRUPT))
+        mbx_rcv_interrupt();
 #endif
 
 #ifdef CAN_CTRL_INTERRUPT

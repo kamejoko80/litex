@@ -14,6 +14,17 @@
 uint16_t buff[512];
 volatile uint16_t sample_num;
 
+#ifdef CSR_MBX_SND_BASE
+void mbx_send_msg(void)
+{
+     mbx_snd_dout_write(0x11);
+     mbx_snd_dout_write(0x22);
+     mbx_snd_dout_write(0x33);
+     mbx_snd_dout_write(0x44);
+     mbx_snd_int_write(1);
+}
+#endif
+
 uint16_t accel_read_reg(uint8_t addr)
 {
     uint8_t reg;
@@ -79,6 +90,15 @@ void gpio_irq(void)
 
 void accel_test(void)
 {
+#if 1
+
+#ifdef CSR_MBX_SND_BASE
+    printf("Send mbx message\n");
+    mbx_send_msg();
+#endif
+
+#else
+
     printf("Accel test program start\n");
 
     printf("ID             = %X\n", accel_read_reg(0));
@@ -101,4 +121,5 @@ void accel_test(void)
     accel_write_reg(45, 0x00);     // POWER_CTL    = Stop measure
 
     printf("Accel test program end\n");
+#endif
 }

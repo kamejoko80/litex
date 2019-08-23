@@ -38,6 +38,16 @@ void accel_isr_init(void)
 }
 #endif
 
+#ifdef MBX_RCV_INTERRUPT
+void mbx_rcv_isr_init(void);
+void mbx_rcv_isr_init(void)
+{
+  mbx_rcv_ev_pending_write(accel_ev_pending_read());
+  mbx_rcv_ev_enable_write(1);
+  irq_setmask(irq_getmask() | (1 << MBX_RCV_INTERRUPT));
+}
+#endif
+
 #ifdef SPI_MASTER_INTERRUPT
 void spi_master_isr_init(void);
 void spi_master_isr_init(void)
@@ -727,6 +737,10 @@ int main(int i, char **c)
 
 #ifdef ACCEL_INTERRUPT
     accel_isr_init();
+#endif
+
+#ifdef MBX_RCV_INTERRUPT
+    mbx_rcv_isr_init();
 #endif
 
 #ifdef SPI_MASTER_INTERRUPT
