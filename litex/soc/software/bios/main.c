@@ -22,6 +22,7 @@
 
 extern void main_app(void);
 extern void accel_test(void);
+extern void mbx_message(void);
 
 #ifdef FLASH_BOOT_ADDRESS
 extern void flash_boot_raw(void);
@@ -42,7 +43,7 @@ void accel_isr_init(void)
 void mbx_rcv_isr_init(void);
 void mbx_rcv_isr_init(void)
 {
-  mbx_rcv_ev_pending_write(accel_ev_pending_read());
+  mbx_rcv_ev_pending_write(mbx_rcv_ev_pending_read());
   mbx_rcv_ev_enable_write(1);
   irq_setmask(irq_getmask() | (1 << MBX_RCV_INTERRUPT));
 }
@@ -520,6 +521,11 @@ static void help(void)
 #ifdef SPI_MASTER_BASE
     puts("adc        - ADC read");
 #endif
+#ifdef PLATFORM_ACCEL_TEST
+#ifdef CSR_MBX_SND_BASE
+    puts("mbx_send   - Mailbox message send demo");
+#endif
+#endif
 #ifdef CSR_CTRL_BASE
 	puts("reboot     - reset processor");
 #endif
@@ -588,6 +594,11 @@ static void do_command(char *c)
 #endif
 #ifdef SPI_MASTER_BASE
 	else if(strcmp(token, "adc") == 0) adc_read(get_token(&c));
+#endif
+#ifdef PLATFORM_ACCEL_TEST
+#ifdef CSR_MBX_SND_BASE
+	else if(strcmp(token, "mbx_send") == 0) mbx_message();
+#endif
 #endif
 #ifdef L2_SIZE
 	else if(strcmp(token, "flushl2") == 0) flush_l2_cache();

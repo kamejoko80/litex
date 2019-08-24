@@ -15,14 +15,28 @@ uint16_t buff[512];
 volatile uint16_t sample_num;
 
 #ifdef CSR_MBX_SND_BASE
-void mbx_send_msg(void)
+
+char *msg = "hello accel simulator\n";
+
+void mbx_send_msg(uint8_t *buff, uint8_t len)
 {
-     mbx_snd_dout_write(0x11);
-     mbx_snd_dout_write(0x22);
-     mbx_snd_dout_write(0x33);
-     mbx_snd_dout_write(0x44);
-     mbx_snd_int_write(1);
+    uint8_t i;
+
+    /* Send data */
+    for(i = 0; i < len; i++)
+    {
+        mbx_snd_dout_write(buff[i]);
+    }
+
+    /* Notify to the receiver */
+    mbx_snd_int_write(1);
 }
+
+void mbx_message(void)
+{
+    mbx_send_msg((uint8_t *)msg, strlen(msg));
+}
+
 #endif
 
 uint16_t accel_read_reg(uint8_t addr)
@@ -92,11 +106,6 @@ void accel_test(void)
 {
 #if 1
 
-#ifdef CSR_MBX_SND_BASE
-    printf("Send mbx message\n");
-    mbx_send_msg();
-#endif
-
 #else
 
     printf("Accel test program start\n");
@@ -123,3 +132,21 @@ void accel_test(void)
     printf("Accel test program end\n");
 #endif
 }
+
+#ifdef MBX_RCV_INTERRUPT
+void mbx_rcv_irq (void)
+{
+    printf("msg len = %d\n", mbx_rcv_len_read());
+
+    while(mbx_rcv_len_read())
+    {
+        /*
+         * First FIFO entry is always ready for reading,
+         * so read fifo.dout before assert fifo.re for the next entries
+         * otherwise 1st FIFO entry will be missed
+         */
+        printf("%c", mbx_rcv_din_read());
+        mbx_rcv_rd_write(1); /* Move to next FIFO entry */
+    }
+}
+#endif
