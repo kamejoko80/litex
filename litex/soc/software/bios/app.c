@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#include <crc.h>
 #include <uart.h>
 #include <console.h>
 #include <generated/csr.h>
@@ -14,9 +15,12 @@
 volatile uint16_t g_sample[3];
 volatile bool g_sendflag;
 
-#ifdef CSR_MBX_SND_BASE
+#ifdef PLATFORM_ACCEL_SIM
+volatile uint16_t g_sample_num = 510;
+uint16_t sample_buff[512];
+#endif
 
-char *msg = "hello accel test program\n";
+#ifdef CSR_MBX_SND_BASE
 
 void mbx_send_msg(uint8_t *buff, uint8_t len)
 {
@@ -184,6 +188,11 @@ void accel_data_read(void)
     char buffer[100];
     char *substr;
 
+#ifdef PLATFORM_ACCEL_SIM
+    uint16_t i = 0;
+    uint32_t crc_32;
+#endif
+
     /* Mount SD Card */
     if(f_mount(&fs, "", 0) != FR_OK)
     {
@@ -212,11 +221,32 @@ void accel_data_read(void)
     {
         substr = (char *)strchr(buffer, ',');
         convert_to_sample_set(substr);
-        //printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
-        dump_sample(g_sample[0]);
-        dump_sample(g_sample[1]);
-        dump_sample(g_sample[2]);
-        printf("\n");
+
+        #ifdef PLATFORM_ACCEL_SIM
+        if(g_sample_num != 0)
+        {
+            sample_buff[i++] = g_sample[0];
+            sample_buff[i++] = g_sample[1];
+            sample_buff[i++] = g_sample[2];
+
+            /* Send CRC to tester */
+            if(i == g_sample_num)
+            {
+                crc_32 = crc32((const unsigned char *)sample_buff, g_sample_num*2);
+                mbx_snd_dout_write((uint8_t)crc_32);
+                mbx_snd_dout_write((uint8_t)(crc_32 >> 8));
+                mbx_snd_dout_write((uint8_t)(crc_32 >> 16));
+                mbx_snd_dout_write((uint8_t)(crc_32 >> 24));
+                i = 0;
+            }
+        }
+
+        /* Data dump debugging */
+        //dump_sample(g_sample[0]);
+        //dump_sample(g_sample[1]);
+        //dump_sample(g_sample[2]);
+        //printf("\n");
+        #endif
 
         /* Just wating for interrupt complete */
         g_sendflag = true;
@@ -268,6 +298,33 @@ void accel_irq (void)
 #ifdef MBX_RCV_INTERRUPT
 void mbx_rcv_irq (void)
 {
+
+#ifdef PLATFORM_ACCEL_SIM
+    uint8_t hi, low;
+
+    printf("receive mailbox len = %d\n", mbx_rcv_len_read());
+
+    /* Accel test soc send 2 bytes checking */
+    if(mbx_rcv_len_read() == 2)
+    {
+        low = mbx_rcv_din_read();
+        mbx_rcv_rd_write(1);
+        hi = mbx_rcv_din_read();
+        mbx_rcv_rd_write(1);
+        g_sample_num = (hi << 8) | low;
+        printf("Setting sample number %d\n", g_sample_num);
+
+        /* Send the response */
+        mbx_send_msg((uint8_t *)"O", 1);
+    }
+
+    /* To make sure the FIFO is empty */
+    while(mbx_rcv_len_read())
+    {
+        mbx_rcv_rd_write(1);
+    }
+
+#else
     printf("msg len = %d\n", mbx_rcv_len_read());
 
     while(mbx_rcv_len_read())
@@ -282,6 +339,8 @@ void mbx_rcv_irq (void)
     }
 
     /* Send the echo message */
-    mbx_send_msg((uint8_t *)msg, strlen(msg));
+    mbx_send_msg((uint8_t *)"hello accel test program\n", strlen("hello accel test program\n"));
+#endif
+
 }
 #endif

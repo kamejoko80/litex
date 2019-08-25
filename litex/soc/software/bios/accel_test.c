@@ -3,17 +3,58 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#include <crc.h>
 #include <uart.h>
 #include <console.h>
 #include <generated/csr.h>
 #include <generated/mem.h>
 #include "spi.h"
 
-#define AXIS_NUM 90 // should be 3*n
+#define DATA_INTEGRITY_CHECK
+
+#define CPU_FREQ (100000000)
+#define AXIS_NUM (510) // should be 3*n
 
 uint16_t buff[512];
 volatile uint16_t sample_num;
 volatile bool g_data_available = false;
+
+#ifdef DATA_INTEGRITY_CHECK
+volatile uint32_t g_crc_32 = 0;
+volatile char g_response = 0;
+
+void HAL_Delay(uint32_t n)
+{
+    uint32_t i, j;
+    for(i = 0; i < n; i++)
+    {
+        for(j = 0; j < CPU_FREQ/1000; j++);
+    }
+}
+
+void get_crc32_from_accel_simulator(void)
+{
+    uint8_t *p = (uint8_t *)&g_crc_32;
+    uint8_t i;
+
+    /* Receive CRC32 check number from accel simulator */
+    if(mbx_rcv_len_read() == 4)
+    {
+        for(i = 0; i < 4; i++)
+        {
+            p[i] = mbx_rcv_din_read();
+            mbx_rcv_rd_write(1);
+        }
+    }
+
+    /* To make sure the FIFO is empty */
+    while(mbx_rcv_len_read())
+    {
+        mbx_rcv_rd_write(1);
+    }
+}
+
+#endif
 
 #ifdef CSR_MBX_SND_BASE
 
@@ -107,6 +148,25 @@ void dump_fifo_data(void)
         }
     }
 
+#ifdef DATA_INTEGRITY_CHECK
+    uint32_t crc_32;
+
+    get_crc32_from_accel_simulator();
+
+    crc_32 = crc32((const unsigned char *)buff, AXIS_NUM*2);
+
+    if(crc_32 != g_crc_32)
+    {
+        printf("crc check error!\n");
+        printf("simulator crc = %X\n", g_crc_32);
+        printf("test crc      = %X\n", crc_32);
+    }
+    else
+    {
+        printf("crc check ok!\n");
+    }
+#endif
+
     printf("\n");
 }
 
@@ -114,7 +174,7 @@ void accel_read_fifo(uint32_t size)
 {
     uint32_t j;
     uint16_t low_byte, high_byte;
-    static uint16_t k = 0;
+    //static uint16_t k = 0;
     for(j = 0; j < size; j++)
     {
         spi_csn_active();
@@ -132,13 +192,13 @@ void accel_read_fifo(uint32_t size)
         //}
     }
 
-    k++;
+    //k++;
 
-    if(k==3)
-    {
+    //if(k==3)
+    //{
       // POWER_CTL    = Stop measure
-       accel_write_reg(45, 0x00);
-    }
+    //   accel_write_reg(45, 0x00);
+    //}
 }
 
 void gpio_irq(void)
@@ -163,14 +223,33 @@ void accel_test(void)
 
     accel_write_reg(31, 0x52); // SOFT_RESET   = Soft reset (0x52)
 
+#ifdef DATA_INTEGRITY_CHECK
+    /* Send sample num to accel simulator */
+    //while(g_response != 'O')
+    //{
+    //    sample_num = AXIS_NUM;
+    //    mbx_send_msg((uint8_t *)&sample_num, 2);
+    //    HAL_Delay(500);
+    //}
+#endif
+
     /* Set mode fifo streamming */
     printf("Setting FIFO stream mode\n");
-    accel_write_reg(40, 0x02);     // FIFO_CONTROL = Stream mode
-    accel_write_reg(41, AXIS_NUM); // FIFO_SAMPLES = 60 (should be = 3N)
-    accel_write_reg(44, 0);        // FILTER_CTL   => ODR = 0 (25 Hz)
-    accel_write_reg(42, 0x84);     // INTMAP1 with FIFO_WATERMARK interrupt (active low)
-    accel_write_reg(43, 0x84);     // INTMAP2 with FIFO_WATERMARK interrupt (active low)
-    accel_write_reg(45, 0x02);     // POWER_CTL    = start measure
+
+    if(AXIS_NUM > 255)
+    {
+       accel_write_reg(40, 0x0A);           // FIFO_CONTROL = Stream mode
+    }
+    else
+    {
+        accel_write_reg(40, 0x02);          // FIFO_CONTROL = Stream mode
+    }
+
+    accel_write_reg(41, (uint8_t)AXIS_NUM); // FIFO_SAMPLES = 60 (should be = 3N)
+    accel_write_reg(44, 3);                 // FILTER_CTL   => ODR = 0 (25 Hz)
+    accel_write_reg(42, 0x84);              // INTMAP1 with FIFO_WATERMARK interrupt (active low)
+    accel_write_reg(43, 0x84);              // INTMAP2 with FIFO_WATERMARK interrupt (active low)
+    accel_write_reg(45, 0x02);              // POWER_CTL    = start measure
 
     while(readchar_nonblock() == 0)
     {
@@ -188,6 +267,22 @@ void accel_test(void)
 #ifdef MBX_RCV_INTERRUPT
 void mbx_rcv_irq (void)
 {
+
+#ifdef DATA_INTEGRITY_CHECK
+    /* Check response from accel simulator */
+    if(mbx_rcv_len_read() == 1)
+    {
+        g_response = (char)mbx_rcv_din_read();
+        mbx_rcv_rd_write(1);
+    }
+
+    /* To make sure the FIFO is empty */
+    while(mbx_rcv_len_read())
+    {
+        mbx_rcv_rd_write(1);
+    }
+
+#else
     printf("msg len = %d\n", mbx_rcv_len_read());
 
     while(mbx_rcv_len_read())
@@ -200,5 +295,6 @@ void mbx_rcv_irq (void)
         printf("%c", mbx_rcv_din_read());
         mbx_rcv_rd_write(1); /* Move to next FIFO entry */
     }
+#endif
 }
 #endif
