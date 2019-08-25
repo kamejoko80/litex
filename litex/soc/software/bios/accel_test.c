@@ -9,10 +9,11 @@
 #include <generated/mem.h>
 #include "spi.h"
 
-#define AXIS_NUM 12 // should be 3*n
+#define AXIS_NUM 90 // should be 3*n
 
 uint16_t buff[512];
 volatile uint16_t sample_num;
+volatile bool g_data_available = false;
 
 #ifdef CSR_MBX_SND_BASE
 
@@ -68,27 +69,75 @@ void read_sample_num(void)
     sample_num |= accel_read_reg(12);
 }
 
+void dump_sample(uint16_t sample)
+{
+    if(sample == 0)
+    {
+        printf("0000 ");
+    }
+    else if (0x10 > sample)  // 1 digit
+    {
+        printf("000%X ", sample);
+    }
+    else if (0x100 > sample) // 2 digits
+    {
+        printf("00%X ", sample);
+    }
+    else if (0x1000 > sample) // 3 digits
+    {
+        printf("0%X ", sample);
+    }
+    else
+    {
+        printf("%X ", sample);
+    }
+}
+
+void dump_fifo_data(void)
+{
+    uint32_t j;
+
+    for(j = 0; j < AXIS_NUM; j++)
+    {
+        dump_sample(buff[j]);
+
+        if(((j + 1) % 3)==0 && j != 0)
+        {
+            printf("\n");
+        }
+    }
+
+    printf("\n");
+}
+
 void accel_read_fifo(uint32_t size)
 {
     uint32_t j;
-    uint16_t value;
-
+    uint16_t low_byte, high_byte;
+    static uint16_t k = 0;
     for(j = 0; j < size; j++)
     {
         spi_csn_active();
         spi_byte_transfer(0x0D);
-        value = spi_byte_transfer(0x00);
-        value = value << 8;
-        value |= spi_byte_transfer(0x00);
+        low_byte = spi_byte_transfer(0x00);
+        high_byte = spi_byte_transfer(0x00);
         spi_csn_inactive();
 
-        buff[j] = value;
-        printf("%4X ", buff[j]);
+        buff[j] = (high_byte << 8) | low_byte;
+        //printf("%4X ", buff[j]);
 
-        if((j % 3)==0)
-        {
-            printf("\n");
-        }
+        //if((j % 3)==0 && j != 0)
+        //{
+        //    printf("\n");
+        //}
+    }
+
+    k++;
+
+    if(k==3)
+    {
+      // POWER_CTL    = Stop measure
+       accel_write_reg(45, 0x00);
     }
 }
 
@@ -99,15 +148,12 @@ void gpio_irq(void)
     if(sample_num >= AXIS_NUM)
     {
       accel_read_fifo(AXIS_NUM);
+      g_data_available = true;
     }
 }
 
 void accel_test(void)
 {
-#if 1
-
-#else
-
     printf("Accel test program start\n");
 
     printf("ID             = %X\n", accel_read_reg(0));
@@ -121,16 +167,22 @@ void accel_test(void)
     printf("Setting FIFO stream mode\n");
     accel_write_reg(40, 0x02);     // FIFO_CONTROL = Stream mode
     accel_write_reg(41, AXIS_NUM); // FIFO_SAMPLES = 60 (should be = 3N)
-    accel_write_reg(44, 3);        // FILTER_CTL   => ODR = 0 (25 Hz)
+    accel_write_reg(44, 0);        // FILTER_CTL   => ODR = 0 (25 Hz)
     accel_write_reg(42, 0x84);     // INTMAP1 with FIFO_WATERMARK interrupt (active low)
     accel_write_reg(43, 0x84);     // INTMAP2 with FIFO_WATERMARK interrupt (active low)
     accel_write_reg(45, 0x02);     // POWER_CTL    = start measure
 
-    while(readchar_nonblock() == 0);
+    while(readchar_nonblock() == 0)
+    {
+        /* Wait for data available */
+        while(!g_data_available && readchar_nonblock() == 0);
+        dump_fifo_data();
+        g_data_available = false;
+    }
+
     accel_write_reg(45, 0x00);     // POWER_CTL    = Stop measure
 
     printf("Accel test program end\n");
-#endif
 }
 
 #ifdef MBX_RCV_INTERRUPT

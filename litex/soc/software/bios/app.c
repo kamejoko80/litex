@@ -11,7 +11,7 @@
 #include "boot.h"
 
 /* This variable contains sample set */
-uint16_t g_sample[3];
+volatile uint16_t g_sample[3];
 volatile bool g_sendflag;
 
 #ifdef CSR_MBX_SND_BASE
@@ -112,6 +112,30 @@ void reset_sample(void)
     g_sample[2] = 0x8000;
 }
 
+void dump_sample(uint16_t sample)
+{
+    if(sample == 0)
+    {
+        printf("0000 ");
+    }
+    else if (0x10 > sample)  // 1 digit
+    {
+        printf("000%X ", sample);
+    }
+    else if (0x100 > sample) // 2 digits
+    {
+        printf("00%X ", sample);
+    }
+    else if (0x1000 > sample) // 3 digits
+    {
+        printf("0%X ", sample);
+    }
+    else
+    {
+        printf("%X ", sample);
+    }
+}
+
 bool convert_to_sample_set(char *str)
 {
     char *p = str;
@@ -125,7 +149,7 @@ bool convert_to_sample_set(char *str)
         {
             sample[i] = strtol(p, &p, 10);
             //printf("%d ", sample[i]);
-            convert_data(sample[i], &g_sample[i], i);
+            convert_data(sample[i], (uint16_t *)&g_sample[i], i);
             //printf("%x ", g_sample[i]);
 
             if(i < 3)
@@ -189,6 +213,10 @@ void accel_data_read(void)
         substr = (char *)strchr(buffer, ',');
         convert_to_sample_set(substr);
         //printf("%4X %4X %4X\n", g_sample[0], g_sample[1], g_sample[2]);
+        dump_sample(g_sample[0]);
+        dump_sample(g_sample[1]);
+        dump_sample(g_sample[2]);
+        printf("\n");
 
         /* Just wating for interrupt complete */
         g_sendflag = true;
