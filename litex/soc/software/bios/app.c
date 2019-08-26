@@ -77,8 +77,8 @@ void convert_data(int16_t sample, uint16_t *val, uint8_t axis)
 {
     if(sample < 0)
     {
-        /* asb(sample) + 2^11 */
-        *val = abs(sample) + 2048;
+        /* asb(sample) + 2^12 */
+        *val = sample + 4096;
     }
     else
     {
@@ -240,13 +240,13 @@ void accel_data_read(void)
                 i = 0;
             }
         }
+        #endif
 
         /* Data dump debugging */
-        //dump_sample(g_sample[0]);
-        //dump_sample(g_sample[1]);
-        //dump_sample(g_sample[2]);
-        //printf("\n");
-        #endif
+        dump_sample(g_sample[0]);
+        dump_sample(g_sample[1]);
+        dump_sample(g_sample[2]);
+        printf("\n");
 
         /* Just wating for interrupt complete */
         g_sendflag = true;
