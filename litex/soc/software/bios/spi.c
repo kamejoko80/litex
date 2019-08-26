@@ -24,7 +24,11 @@ void spi_init(void)
 {
 
 /* SD card interface */
-#if defined(PLATFORM_AE4GX) || defined(PLATFORM_BASYS3) || defined(PLATFORM_ACCEL_SIM)
+#if defined(PLATFORM_AE4GX) || \
+    defined(PLATFORM_BASYS3) || \
+    defined(PLATFORM_ACCEL_SIM) || \
+    defined(PLATFORM_ACCEL_SIM_RELEASE)
+
     /*
      * sclk = wb_clk /((SPI_DIV + 1) x 2)
      *
