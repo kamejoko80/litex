@@ -187,6 +187,7 @@ void accel_data_read(void)
     FIL fil;
     char buffer[100];
     char *substr;
+    bool soc_ready_flag = false;
 
 #ifdef PLATFORM_ACCEL_SIM
     uint16_t i = 0;
@@ -214,8 +215,6 @@ void accel_data_read(void)
     printf("Data sending...\n");
 
     reset_sample();
-
-    soc_ready();
 
     while(f_gets(buffer, sizeof(buffer), &fil))
     {
@@ -247,6 +246,13 @@ void accel_data_read(void)
         dump_sample(g_sample[1]);
         dump_sample(g_sample[2]);
         printf("\n");
+
+        /* Notify that data ready for transfering */
+        if(!soc_ready_flag)
+        {
+            soc_ready_flag = true;
+            soc_ready();
+        }
 
         /* Just wating for interrupt complete */
         g_sendflag = true;
