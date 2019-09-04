@@ -27,6 +27,7 @@ void spi_init(void)
 #if defined(PLATFORM_AE4GX) || \
     defined(PLATFORM_BASYS3) || \
     defined(PLATFORM_ACCEL_SIM) || \
+    defined(PLATFORM_AT7CORE) || \
     defined(PLATFORM_ACCEL_SIM_RELEASE)
 
     /*

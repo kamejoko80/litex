@@ -34,12 +34,12 @@ _io = [
 
     ("spi_slave", 0,
         # SPI slave part
-        Subsignal("sck", Pins("B26")),  # U4 17
-        Subsignal("miso", Pins("D24")), # U4 19
-        Subsignal("mosi", Pins("D25")), # U4 21
-        Subsignal("csn", Pins("D26")),  # U4 23
-        Subsignal("int1", Pins("G26")), # U4 25
-        Subsignal("int2", Pins("F25")), # U4 27
+        Subsignal("sck", Pins("AB26")), # U4 60
+        Subsignal("miso", Pins("AA24")),# U4 58
+        Subsignal("mosi", Pins("Y25")), # U4 56
+        Subsignal("csn", Pins("V24")),  # U4 54
+        Subsignal("int1", Pins("W25")), # U4 52
+        Subsignal("int2", Pins("V26")), # U4 50
        #Subsignal("irq", Pins("H2")),   #
         Subsignal("led0", Pins("J26")), # LED0 U4 29
         Subsignal("led1", Pins("H24")), # LED1 U4 31
