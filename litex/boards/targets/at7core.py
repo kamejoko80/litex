@@ -47,7 +47,7 @@ class _CRG(Module):
 # BaseSoC ------------------------------------------------------------------------------------------
 
 class BaseSoC(SoCCore):
-    def __init__(self, sys_clk_freq=int(150e6), **kwargs):
+    def __init__(self, sys_clk_freq=int(200e6), **kwargs):
         platform = at7core.Platform()
         SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
                          with_uart=True,
