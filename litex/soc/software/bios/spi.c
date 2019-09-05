@@ -26,15 +26,24 @@ void spi_init(void)
 /* SD card interface */
 #if defined(PLATFORM_AE4GX) || \
     defined(PLATFORM_BASYS3) || \
-    defined(PLATFORM_ACCEL_SIM) || \
-    defined(PLATFORM_AT7CORE) || \
-    defined(PLATFORM_ACCEL_SIM_RELEASE)
-
+    defined(PLATFORM_AT7CORE)
     /*
      * sclk = wb_clk /((SPI_DIV + 1) x 2)
      *
      */
     SPI_DIV   = 0x03;  // fclk/8 ~ 12MHz
+    SPI_CTRL  = (1 << TX_NEG);
+    // SPI_CTRL |= (1 << IE);
+    SPI_CTRL |= 0x08;  // 8 byte transfer
+    SPI_SS    = 0x00;  // cns inactive
+
+#elif defined(PLATFORM_ACCEL_SIM_RELEASE) || \
+      defined(PLATFORM_ACCEL_SIM)
+    /*
+     * sclk = wb_clk /((SPI_DIV + 1) x 2)
+     *
+     */
+    SPI_DIV   = 0x05;  // fclk/12 ~ 20MHz
     SPI_CTRL  = (1 << TX_NEG);
     // SPI_CTRL |= (1 << IE);
     SPI_CTRL |= 0x08;  // 8 byte transfer

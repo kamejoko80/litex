@@ -19,7 +19,7 @@ extern void spi_init(void);
 extern void spi_csn_active(void);
 extern void spi_csn_inactive(void);
 extern uint16_t spi_byte_transfer(uint8_t byte);
-#else    
+#else
 __attribute__((weak)) void spi_init(void){}
 __attribute__((weak)) void spi_csn_active(void){}
 __attribute__((weak)) void spi_csn_inactive(void){}
@@ -30,7 +30,12 @@ __attribute__((weak)) uint16_t spi_byte_transfer(uint8_t byte) {return 0;}
  * SPI functions
  **************************************/
 
+#if defined(PLATFORM_ACCEL_SIM_RELEASE) || \
+    defined(PLATFORM_ACCEL_SIM)
+#define CPU_FREQ (250000000)
+#else
 #define CPU_FREQ (100000000)
+#endif
 
 void HAL_Delay(uint32_t n)
 {
