@@ -17,6 +17,7 @@ class _CRG(Module):
         clk100 = platform.request("clk100")
 
         self.clock_domains.cd_sys = ClockDomain()
+        self.clock_domains.cd_clkout = ClockDomain()
         self.reset = Signal()
 
         # POR reset logic- POR generated from sys clk, POR logic feeds sys clk
@@ -24,8 +25,8 @@ class _CRG(Module):
         self.clock_domains.cd_por = ClockDomain()
         reset_delay = Signal(12, reset=4095)
         self.comb += [
-            self.cd_sys.clk.eq(clk100),
-            self.cd_por.clk.eq(clk100),
+            self.cd_sys.clk.eq(self.cd_clkout.clk),
+            self.cd_por.clk.eq(self.cd_clkout.clk),
         ]
 
         self.sync += [
@@ -39,20 +40,19 @@ class _CRG(Module):
 
         self.specials += AsyncResetSynchronizer(self.cd_por, self.reset)
 
-        #self.submodules.pll = pll = S7PLL(speedgrade=-1)
-        #self.comb += pll.reset.eq(~rst_n)
-        #pll.register_clkin(clk100, 100e6)
-        #pll.create_clkout(self.cd_sys.clk, sys_clk_freq)
+        self.submodules.pll = pll = S7PLL(speedgrade=-1)
+        pll.register_clkin(clk100, 100e6)
+        pll.create_clkout(self.cd_clkout, sys_clk_freq)
 
 # BaseSoC ------------------------------------------------------------------------------------------
 
 class BaseSoC(SoCCore):
-    def __init__(self, sys_clk_freq=int(100e6), **kwargs):
+    def __init__(self, sys_clk_freq=int(200e6), **kwargs):
         platform = basys3.Platform()
         SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
                          with_uart=True,
                          integrated_rom_size=0xA000,   #
-                         integrated_sram_size=0x1000,  #
+                         integrated_sram_size=0x2000,  #
                          integrated_main_ram_size=0,
                          **kwargs)
 
