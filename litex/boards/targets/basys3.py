@@ -18,7 +18,6 @@ class _CRG(Module):
 
         self.clock_domains.cd_sys = ClockDomain()
         self.clock_domains.cd_clkout = ClockDomain()
-        self.reset = Signal()
 
         # POR reset logic- POR generated from sys clk, POR logic feeds sys clk
         # reset.
@@ -37,8 +36,6 @@ class _CRG(Module):
             If(reset_delay != 0,
                 reset_delay.eq(reset_delay - 1)
             )
-
-        self.specials += AsyncResetSynchronizer(self.cd_por, self.reset)
 
         self.submodules.pll = pll = S7PLL(speedgrade=-1)
         pll.register_clkin(clk100, 100e6)
