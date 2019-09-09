@@ -216,6 +216,10 @@ void accel_data_read(void)
 
     reset_sample();
 
+#ifdef CSR_GPIO_LED_BASE
+    gpio_led_led_write(0);
+#endif
+
     while(f_gets(buffer, sizeof(buffer), &fil))
     {
         substr = (char *)strchr(buffer, ',');
@@ -274,6 +278,10 @@ void accel_data_read(void)
     }
 
     printf("Done\n");
+
+#ifdef CSR_GPIO_LED_BASE
+    gpio_led_led_write(1);
+#endif
 
 }
 

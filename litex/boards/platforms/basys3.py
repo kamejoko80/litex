@@ -22,7 +22,7 @@ _io = [
     #("user_led", 12, Pins("P3"),  IOStandard("LVCMOS33")),
     #("user_led", 13, Pins("N3"),  IOStandard("LVCMOS33")),
     #("user_led", 14, Pins("P1"),  IOStandard("LVCMOS33")),
-    #("user_led", 15, Pins("L1"),  IOStandard("LVCMOS33")),
+    ("user_led", 15, Pins("L1"),  IOStandard("LVCMOS33")),
 
     ("user_sw",  0,  Pins("V17"), IOStandard("LVCMOS33")),
     ("user_sw",  1,  Pins("V16"), IOStandard("LVCMOS33")),
