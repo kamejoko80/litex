@@ -8,14 +8,24 @@ endif
 
 CPUFLAGS += -D$(PLATFORM) 
 
-OBJECTS=isr.o can.o spi.o sdram.o main.o boot-helper-$(CPU).o boot.o
+OBJECTS=isr.o sdram.o main.o boot-helper-$(CPU).o boot.o
 
-ifneq ($(PLATFORM), $(filter $(PLATFORM),PLATFORM_QMATECH PLATFORM_ACCEL_TEST))
-OBJECTS += fatfs_sd.o app.o
+# Soucre including
+ifneq ($(PLATFORM), $(filter $(PLATFORM), PLATFORM_QMATECH \
+                                          PLATFORM_ACCEL_TEST \
+                                          PLATFORM_AT7CORE \
+                                          ))
+OBJECTS += fatfs_sd.o app.o spi.o can.o
 endif
 
+# Soucre including
 ifeq ($(PLATFORM), PLATFORM_ACCEL_TEST)
-OBJECTS += accel_test.o
+OBJECTS += accel_test.o spi.o
+endif
+
+# Soucre including
+ifeq ($(PLATFORM), PLATFORM_AT7CORE)
+OBJECTS += sf_programmer.o
 endif
 
 all: bios.bin
