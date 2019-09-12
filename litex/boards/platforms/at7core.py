@@ -24,11 +24,37 @@ _io = [
     ),
 
     ("spi", 0,
-        Subsignal("sclk", Pins("A22")), # U4 07
-        Subsignal("miso", Pins("A23")), # U4 09
-        Subsignal("mosi", Pins("A25")), # U4 11
-        Subsignal("csn", Pins("C23")),  # U4 13
-        Subsignal("irq", Pins("B24")),  # U4 15
+        Subsignal("sck_0", Pins("A22")),  # U4 07 (sck line  0)
+        Subsignal("miso_0", Pins("A23")), # U4 09 (miso line 0)
+        Subsignal("mosi_0", Pins("A25")), # U4 11 (mosi line 0)
+        Subsignal("csn_0", Pins("C23")),  # U4 13 (csn line  0)
+        Subsignal("irq", Pins("B24")),    # U4 15
+        IOStandard("LVCMOS33"),
+    ),
+
+    ("spi", 1,
+        # line 0
+        Subsignal("sck_0",  Pins("B26")), # U4 17 (sck line  0)
+        Subsignal("miso_0", Pins("D24")), # U4 19 (miso line 0)
+        Subsignal("mosi_0", Pins("D25")), # U4 21 (mosi line 0)
+        Subsignal("csn_0",  Pins("D26")), # U4 23 (csn line  0)
+        # line 1
+        Subsignal("sck_1",  Pins("G26")), # U4 25 (sck line  1)
+        Subsignal("miso_1", Pins("F25")), # U4 27 (miso line 1)
+        Subsignal("mosi_1", Pins("J26")), # U4 29 (mosi line 1)
+        Subsignal("csn_1",  Pins("H24")), # U4 31 (csn line  1)
+        # line 2
+        Subsignal("sck_2",  Pins("K26")), # U4 33 (sck line  2)
+        Subsignal("miso_2", Pins("L25")), # U4 35 (miso line 2)
+        Subsignal("mosi_2", Pins("M26")), # U4 37 (mosi line 2)
+        Subsignal("csn_2",  Pins("M25")), # U4 39 (csn line  2)
+        # line 3
+        Subsignal("sck_3",  Pins("P26")), # U4 41 (sck line  3)
+        Subsignal("miso_3", Pins("P25")), # U4 43 (miso line 3)
+        Subsignal("mosi_3", Pins("U25")), # U4 45 (mosi line 3)
+        Subsignal("csn_3",  Pins("T25")), # U4 47 (csn line  3)
+        # IRQ pin
+        Subsignal("irq",    Pins("W26")), # U4 49
         IOStandard("LVCMOS33"),
     ),
 
