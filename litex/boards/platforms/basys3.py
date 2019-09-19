@@ -57,10 +57,10 @@ _io = [
     ),
 
     ("spi", 0,
-        Subsignal("sclk", Pins("A14")), # JB1
-        Subsignal("miso", Pins("A16")), # JB2
-        Subsignal("mosi", Pins("B15")), # JB3
-        Subsignal("csn", Pins("B16")),  # JB4
+        Subsignal("csn", Pins("A14")),  # JB1
+        Subsignal("mosi", Pins("A16")), # JB2
+        Subsignal("miso", Pins("B15")), # JB3
+        Subsignal("sclk", Pins("B16")), # JB4
         Subsignal("irq", Pins("A15")),  # JB7
         IOStandard("LVCMOS33"),
     ),
