@@ -2,13 +2,16 @@ include ../include/generated/variables.mak
 include $(SOC_DIRECTORY)/software/common.mak
 
 ifeq ($(CPU),blackparrot)
-BP_LIBS =  -L$(BP_EXTERNAL_DIR)/lib/gcc/riscv64-unknown-elf/8.3.0 
+BP_LIBS =  -L$(BP_EXTERNAL_DIR)/lib/gcc/riscv64-unknown-elf/8.3.0
 BP_FLAGS = -lgcc
 endif
 # Permit TFTP_SERVER_PORT override from shell environment / command line
 ifdef TFTP_SERVER_PORT
 CFLAGS += -DTFTP_SERVER_PORT=$(TFTP_SERVER_PORT)
 endif
+
+# Distinguish platform name.
+CPUFLAGS += -D$(PLATFORM)
 
 OBJECTS=isr.o sdram.o sdcard.o main.o boot-helper-$(CPU).o boot.o
 
@@ -38,7 +41,7 @@ bios.elf: $(BIOS_DIRECTORY)/linker.ld $(OBJECTS)
 		$(BP_LIBS) \
 		-lnet -lbase-nofloat -lcompiler_rt \
 		$(BP_FLAGS)
-	
+
 ifneq ($(OS),Windows_NT)
 	chmod -x $@
 endif

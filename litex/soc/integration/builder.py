@@ -86,6 +86,8 @@ class Builder:
 
             for k, v in export.get_cpu_mak(self.soc.cpu, self.compile_software):
                 define(k, v)
+            # Distinguish platform name.
+            define("PLATFORM", "PLATFORM_" + self.soc.platform.name.upper())
             # Distinguish between LiteX and MiSoC.
             define("LITEX", "1")
             # Distinguish between applications running from main RAM and
