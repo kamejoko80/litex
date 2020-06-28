@@ -26,6 +26,7 @@ class SPIMaster(Module, AutoCSR):
         self.data_width = data_width
 
         self.start       = Signal()
+        self.csnd        = Signal()
         self.length      = Signal(8)
         self.done        = Signal()
         self.irq         = Signal()
@@ -94,7 +95,7 @@ class SPIMaster(Module, AutoCSR):
         # Chip Select generation -------------------------------------------------------------------
         if hasattr(pads, "cs_n"):
             for i in range(len(pads.cs_n)):
-                self.comb += pads.cs_n[i].eq(~self.cs[i] | ~xfer)
+                self.comb += pads.cs_n[i].eq(~self.cs[i] | (~xfer & ~self.csnd))
 
         # Master Out Slave In (MOSI) generation (generated on spi_clk falling edge) ---------------
         mosi_data = Signal(data_width)
@@ -125,7 +126,8 @@ class SPIMaster(Module, AutoCSR):
 
     def add_csr(self):
         self._control  = CSRStorage(fields=[
-            CSRField("start",  size=1, offset=0, pulse=True, description="Write ``1`` to start SPI Xfer"),
+            CSRField("start", size=1, offset=0, pulse=True, description="Write ``1`` to start SPI Xfer"),
+            CSRField("csnd", size=1, offset=1, description="Write ``1`` to disable auto de-assert"),
             CSRField("length", size=8, offset=8, description="SPI Xfer length (in bits).")
         ], description="SPI Control.")
         self._status   = CSRStatus(fields=[
@@ -140,6 +142,7 @@ class SPIMaster(Module, AutoCSR):
 
         self.comb += [
             self.start.eq(self._control.fields.start),
+            self.csnd.eq(self._control.fields.csnd),
             self.length.eq(self._control.fields.length),
             self.mosi.eq(self._mosi.storage),
             self.cs.eq(self._cs.storage),
