@@ -6,7 +6,6 @@ from litex.soc.interconnect.csr import *
 from litex.soc.interconnect import wishbone
 
 SPI_START  = ((8<<8) | (1<<0))
-SPI_LENGTH = (1<<8)
 SPI_DONE   = (1<<0)
 
 class Wishbone2SPIDMA(Module, AutoCSR):
@@ -18,14 +17,17 @@ class Wishbone2SPIDMA(Module, AutoCSR):
         self.start = CSR()
         self.done  = CSRStatus()
 
-        # Read parameters: base and length of DMA
-        self.read_base   = CSRStorage(32)
-        self.read_length = CSRStorage(32)
+        # Read parameters: tx source address and length of DMA
+        self.tx_src_addr = CSRStorage(32) # DMA TX source address
+        self.rx_dst_addr = CSRStorage(32) # DMA RX destination address
+        self.tx_len      = CSRStorage(32) # DMA TX size (bytes)
+        self.rx_ena      = CSRStorage(32) # DMA RX enable
 
         # SPI parameters: address of control/status/mosi registers
         self.spi_control_reg_address = CSRStorage(32)
         self.spi_status_reg_address  = CSRStorage(32)
         self.spi_mosi_reg_address    = CSRStorage(32)
+        self.spi_miso_reg_address    = CSRStorage(32)
 
         # # #
 
@@ -33,10 +35,13 @@ class Wishbone2SPIDMA(Module, AutoCSR):
         start = self.start.re
         done  = self.done.status
 
-        read_base   = self.read_base.storage[2:]
-        read_length = self.read_length.storage
+        tx_src_addr = self.tx_src_addr.storage[2:]
+        rx_dst_addr = self.rx_dst_addr.storage[2:]
+        tx_len      = self.tx_len.storage
+        rx_ena      = self.rx_ena
 
         spi_mosi_reg_address    = self.spi_mosi_reg_address.storage[2:]
+        spi_miso_reg_address    = self.spi_miso_reg_address.storage[2:]
         spi_control_reg_address = self.spi_control_reg_address.storage[2:]
         spi_status_reg_address  = self.spi_status_reg_address.storage[2:]
 
@@ -44,7 +49,9 @@ class Wishbone2SPIDMA(Module, AutoCSR):
         word_offset = Signal(32)
         byte_offset = Signal(3)
         byte_count  = Signal(32)
-        data        = Signal(32)
+        tx_data     = Signal(32)
+        rx_data     = Signal(32)
+        miso_data   = Signal(32)
 
         # fsm
         self.submodules.fsm = fsm = FSM()
@@ -53,31 +60,32 @@ class Wishbone2SPIDMA(Module, AutoCSR):
                 NextValue(word_offset, 0),
                 NextValue(byte_offset, 0),
                 NextValue(byte_count, 0),
-                NextState("WISHBONE-READ-DATA")
+                NextValue(rx_data, 0),
+                NextState("WISHBONE-READ-TX-DMA-BUFF")
             ).Else(
                 done.eq(1),
             )
         )
-        fsm.act("WISHBONE-READ-DATA",
+        fsm.act("WISHBONE-READ-TX-DMA-BUFF",
             bus.stb.eq(1),
             bus.cyc.eq(1),
-            bus.adr.eq(read_base + word_offset),
+            bus.adr.eq(tx_src_addr + word_offset),
             If(bus.ack,
-                NextValue(data, bus.dat_r),
-                NextState("SPI-WRITE-DATA")
+                NextValue(tx_data, bus.dat_r),
+                NextState("WISHBONE-WRITE-MOSI-REG")
             )
         )
-        fsm.act("SPI-WRITE-DATA",
+        fsm.act("WISHBONE-WRITE-MOSI-REG",
             bus.stb.eq(1),
             bus.cyc.eq(1),
             bus.we.eq(1),
             bus.adr.eq(spi_mosi_reg_address),
-            bus.dat_w.eq(data),
+            bus.dat_w.eq(tx_data),
             If(bus.ack,
-                NextState("SPI-WRITE-START")
+                NextState("WISHBONE-WRITE-CONTROL-START")
             )
         )
-        fsm.act("SPI-WRITE-START",
+        fsm.act("WISHBONE-WRITE-CONTROL-START",
             bus.stb.eq(1),
             bus.cyc.eq(1),
             bus.we.eq(1),
@@ -93,24 +101,74 @@ class Wishbone2SPIDMA(Module, AutoCSR):
             bus.adr.eq(spi_status_reg_address),
             If(bus.ack,
                 If(bus.dat_r & SPI_DONE,
-                    NextValue(byte_count, byte_count + 1),
-                    NextValue(byte_offset, byte_offset + 1),
-                    NextState("SHIFT-BYTE")
+                    If(rx_ena == 0,
+                        NextValue(byte_count, byte_count + 1),
+                        NextValue(byte_offset, byte_offset + 1),
+                        NextState("SHIFT-BYTE")
+                    ).Else(
+                        NextValue(byte_count, byte_count + 1),
+                        NextValue(byte_offset, byte_offset + 1),
+                        NextState("WISHBONE-READ-MISO-REG")
+                    )
                 )
             )
         )
-        fsm.act("SHIFT-BYTE",
-            If(byte_count >= read_length,
+        fsm.act("WISHBONE-READ-MISO-REG",
+            bus.stb.eq(1),
+            bus.cyc.eq(1),
+            bus.adr.eq(spi_miso_reg_address),
+            If(bus.ack,
+                NextValue(miso_data, bus.dat_r),
+                NextState("SHIFT-BYTE")
+            )
+        )
+        fsm.act("WISHBONE-WRITE-RX-DMA-BUFF-LAST",
+            bus.stb.eq(1),
+            bus.cyc.eq(1),
+            bus.we.eq(1),
+            bus.sel.eq(0b1111), # mandatory for writing data to mem
+            bus.adr.eq(rx_dst_addr + word_offset),
+            bus.dat_w.eq(rx_data),
+            If(bus.ack,
                 NextState("IDLE")
-            ).Elif(byte_offset >= 4,
-                NextValue(byte_offset, 0),
+            )
+        )
+        fsm.act("WISHBONE-WRITE-RX-DMA-BUFF",
+            bus.stb.eq(1),
+            bus.cyc.eq(1),
+            bus.we.eq(1),
+            bus.sel.eq(0b1111), # mandatory for writing data to mem
+            bus.adr.eq(rx_dst_addr + word_offset),
+            bus.dat_w.eq(rx_data),
+            If(bus.ack,
+                NextValue(rx_data, 0),
                 NextState("INC-WORD-OFFSET")
+            )
+        )
+        fsm.act("SHIFT-BYTE",
+            If(byte_count >= tx_len,
+                If(rx_ena == 0,
+                    NextState("IDLE")
+                ).Else(
+                    NextValue(rx_data, (rx_data << 8) | miso_data[0:8]),
+                    NextState("WISHBONE-WRITE-RX-DMA-BUFF-LAST")
+                )
+            ).Elif(byte_offset >= 4,
+                If(rx_ena == 0,
+                    NextValue(byte_offset, 0),
+                    NextState("INC-WORD-OFFSET")
+                ).Else(
+                    NextValue(byte_offset, 0),
+                    NextValue(rx_data, (rx_data << 8) | miso_data[0:8]),
+                    NextState("WISHBONE-WRITE-RX-DMA-BUFF")
+                )
             ).Else(
-                NextValue(data, data >> 8),
-                NextState("SPI-WRITE-DATA")
+                NextValue(rx_data, (rx_data << 8) | miso_data[0:8]),
+                NextValue(tx_data, tx_data >> 8),
+                NextState("WISHBONE-WRITE-MOSI-REG")
             )
         )
         fsm.act("INC-WORD-OFFSET",
             NextValue(word_offset, word_offset + 1),
-            NextState("WISHBONE-READ-DATA")
+            NextState("WISHBONE-READ-TX-DMA-BUFF")
         )
