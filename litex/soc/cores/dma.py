@@ -3,6 +3,7 @@
 from migen import *
 
 from litex.soc.interconnect.csr import *
+from litex.soc.interconnect.csr_eventmanager import *
 from litex.soc.interconnect import wishbone
 
 SPI_START  = ((8<<8) | (1<<1) | (1<<0)) # disable csn auto de-assert
@@ -12,6 +13,11 @@ class Wishbone2SPIDMA(Module, AutoCSR):
     def __init__(self):
         # Wishbone
         self.bus = bus = wishbone.Interface()
+
+        # Interrupt
+        self.submodules.ev = EventManager()
+        self.ev.rising_int = EventSourcePulse()
+        self.ev.finalize()
 
         # Control
         self.start = CSR()
@@ -56,6 +62,7 @@ class Wishbone2SPIDMA(Module, AutoCSR):
         # fsm
         self.submodules.fsm = fsm = FSM()
         fsm.act("IDLE",
+            NextValue(self.ev.rising_int.trigger, 0),
             If(start,
                 NextValue(word_offset, 0),
                 NextValue(byte_offset, 0),
@@ -63,7 +70,7 @@ class Wishbone2SPIDMA(Module, AutoCSR):
                 NextValue(rx_data, 0),
                 NextState("WISHBONE-READ-TX-DMA-BUFF")
             ).Else(
-                done.eq(1),
+                done.eq(1)
             )
         )
         fsm.act("WISHBONE-READ-TX-DMA-BUFF",
@@ -130,6 +137,7 @@ class Wishbone2SPIDMA(Module, AutoCSR):
             bus.adr.eq(rx_dst_addr + word_offset),
             bus.dat_w.eq(rx_data),
             If(bus.ack,
+                NextValue(self.ev.rising_int.trigger, 1),
                 NextState("IDLE")
             )
         )
@@ -148,6 +156,7 @@ class Wishbone2SPIDMA(Module, AutoCSR):
         fsm.act("SHIFT-BYTE",
             If(byte_count >= tx_len,
                 If(rx_ena == 0,
+                    NextValue(self.ev.rising_int.trigger, 1),
                     NextState("IDLE")
                 ).Else(
                     NextValue(rx_data, (rx_data << 8) | miso_data[0:8]),
