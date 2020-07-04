@@ -18,6 +18,7 @@
 
 #include <generated/mem.h>
 #include <generated/csr.h>
+#include <generated/soc.h>
 
 #ifdef CSR_ETHMAC_BASE
 #include <net/microudp.h>
@@ -429,6 +430,10 @@ static int copy_image_from_flash_to_ram(unsigned int flash_address, unsigned int
 	#define EMULATOR_IMAGE_FLASH_OFFSET    0x00E00000 // 14MB
 #endif
 
+#ifndef FIRMWARE_IMAGE_FLASH_OFFSET
+	#define FIRMWARE_IMAGE_FLASH_OFFSET    0x00000000 // 0MB
+#endif
+
 void flashboot(void)
 {
 	unsigned int length;
@@ -470,14 +475,15 @@ void flashboot(void)
 #endif
 
 	printf("Booting from flash...\n");
-	length = check_image_in_flash(FLASH_BOOT_ADDRESS);
+	length = check_image_in_flash(FLASH_BOOT_ADDRESS + FIRMWARE_IMAGE_FLASH_OFFSET);
 	if(!length)
 		return;
 
 #ifdef MAIN_RAM_BASE
 	printf("Loading %d bytes from flash...\n", length);
 	// skip length and crc
-	memcpy((void *)MAIN_RAM_BASE, (unsigned int *)(FLASH_BOOT_ADDRESS + 2 * sizeof(unsigned int)), length);
+	memcpy((void *)MAIN_RAM_BASE, (unsigned int *)(FLASH_BOOT_ADDRESS +
+					FIRMWARE_IMAGE_FLASH_OFFSET + 2 * sizeof(unsigned int)), length);
 #endif
 
 	boot(0, 0, 0, FIRMWARE_BASE_ADDRESS);
