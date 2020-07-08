@@ -54,8 +54,8 @@ void spidma_test(void)
 {
 #define SIZE 128
 
-	unsigned int *tx_buff = (unsigned int *)MAIN_RAM_BASE;
-	unsigned int *rx_buff = (unsigned int *)(MAIN_RAM_BASE + SIZE);
+	unsigned int *tx_buff = (unsigned int *)(MAIN_RAM_BASE + 0xA00000);
+	unsigned int *rx_buff = (unsigned int *)(MAIN_RAM_BASE + 0xA00000 + SIZE);
 
 	/* initialize buffer */
 	tx_buff[0] = 0x12345678;
@@ -116,6 +116,10 @@ int main(int i, char **c)
 #endif
 
 	printf("Applciation \n");
+
+#ifdef CSR_SPI_BASE
+	spidma_test();
+#endif
 
 	while(1);
 
