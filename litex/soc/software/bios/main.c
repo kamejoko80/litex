@@ -45,6 +45,112 @@
 
 /* General address space functions */
 
+#ifdef SPI_DMA_INTERRUPT
+void spi_dma_isr_init(void);
+void spi_dma_isr_init(void)
+{
+	spi_dma_ev_pending_write(spi_dma_ev_pending_read());
+  spi_dma_ev_enable_write(1);
+  irq_setmask(irq_getmask() | (1 << SPI_DMA_INTERRUPT));
+}
+
+void spi_dma_irq(void);
+void spi_dma_irq(void)
+{
+	printf("spi_dma_irq\n\r");
+}
+
+#endif
+
+#ifdef CSR_SPI_BASE
+void spidma_test(void);
+void spidma_test(void)
+{
+
+#if 0
+	unsigned char tx_buff[] = {0x11, 0x12, 0x13, 0x14,
+													  0x15, 0x16, 0x17, 0x18,
+														0x19, 0x20, 0x21, 0x22,
+														0x23, 0x24, 0x25, 0x26
+													};
+	unsigned int i, ctrl;
+
+	/* SPI loopback config */
+	spi_loopback_write(1);
+
+	/* SPI start, disbale csn auto de-assert, length = 8bits */
+	ctrl = (8 << 8) | (1 << 1) | (1 << 0);
+
+	/* CS assert */
+	spi_cs_write(1);
+
+	for(i=0; i < sizeof(tx_buff); i++)
+	{
+		spi_mosi_write(tx_buff[i]);
+		spi_control_write(ctrl);
+		while(!spi_status_read());
+	}
+	/* CS de-assert */
+	spi_cs_write(0);
+
+	printf("MISO read %X\r\n", spi_miso_read());
+#else
+
+#define SIZE 128
+
+	unsigned int *tx_buff = (unsigned int *)MAIN_RAM_BASE;
+	unsigned int *rx_buff = (unsigned int *)(MAIN_RAM_BASE + SIZE);
+
+	/* initialize buffer */
+	tx_buff[0] = 0x12345678;
+	tx_buff[1] = 0xABCDEFAB;
+	tx_buff[2] = 0x15252617;
+	tx_buff[3] = 0x19127934;
+
+	rx_buff[0] = 0;
+	rx_buff[1] = 0;
+	rx_buff[2] = 0;
+	rx_buff[3] = 0;
+
+	/* SPI loopback config */
+	spi_loopback_write(1);
+
+	/* initialize spi dma */
+	spi_dma_spi_control_reg_address_write(CSR_SPI_CONTROL_ADDR);
+	spi_dma_spi_status_reg_address_write(CSR_SPI_STATUS_ADDR);
+	spi_dma_spi_mosi_reg_address_write(CSR_SPI_MOSI_ADDR);
+	spi_dma_spi_miso_reg_address_write(CSR_SPI_MISO_ADDR);
+
+	/* setup dma transfer */
+	spi_dma_tx_src_addr_write(MAIN_RAM_BASE);
+	spi_dma_rx_dst_addr_write(MAIN_RAM_BASE + 16);
+	spi_dma_tx_len_write(SIZE);
+	spi_dma_rx_ena_write(1);
+
+	/* CS assert */
+	spi_cs_write(1);
+
+	/* start dma transfer */
+	spi_dma_start_write(1);
+
+	/* wait for dma done */
+	while(!spi_dma_done_read());
+
+	/* CS de-assert */
+	spi_cs_write(0);
+
+	printf("spi_dma_rx_ena_read %X\r\n", spi_dma_rx_ena_read());
+	printf("DMA done! MISO read %X\r\n", spi_miso_read());
+
+  printf("rx_buff[0]          %X\r\n", rx_buff[0]);
+  printf("rx_buff[1]          %X\r\n", rx_buff[1]);
+  printf("rx_buff[2]          %X\r\n", rx_buff[2]);
+  printf("rx_buff[3]          %X\r\n", rx_buff[3]);
+
+#endif
+}
+#endif /* CSR_SPI_BASE */
+
 #define NUMBER_OF_BYTES_ON_A_LINE 16
 static void dump_bytes(unsigned int *ptr, int count, unsigned long addr)
 {
@@ -346,10 +452,12 @@ static void help(void)
 	puts("mr         - read address space");
 	puts("mw         - write address space");
 	puts("mc         - copy address space");
+#ifdef CSR_SPI_BASE
+	puts("spidma     - test spi dma");
+#endif
 #if (defined CSR_SPIFLASH_BASE && defined SPIFLASH_PAGE_SIZE)
 	puts("fe         - erase whole flash");
 	puts("fw         - write to flash");
-
 #endif
 #ifdef CSR_ETHPHY_MDIO_W_ADDR
 	puts("mdiow      - write MDIO register");
@@ -432,6 +540,9 @@ static void do_command(char *c)
 	if(strcmp(token, "mr") == 0) mr(get_token(&c), get_token(&c));
 	else if(strcmp(token, "mw") == 0) mw(get_token(&c), get_token(&c), get_token(&c));
 	else if(strcmp(token, "mc") == 0) mc(get_token(&c), get_token(&c), get_token(&c));
+#ifdef CSR_SPI_BASE
+	else if(strcmp(token, "spidma") == 0) spidma_test();
+#endif
 #if (defined CSR_SPIFLASH_BASE && defined SPIFLASH_PAGE_SIZE)
 	else if(strcmp(token, "fw") == 0) fw(get_token(&c), get_token(&c), get_token(&c));
 	else if(strcmp(token, "fe") == 0) fe();
@@ -614,6 +725,10 @@ int main(int i, char **c)
 	irq_setmask(0);
 	irq_setie(1);
 	uart_init();
+
+#ifdef SPI_DMA_INTERRUPT
+	spi_dma_isr_init();
+#endif
 
 	printf("\n");
 	printf("\e[1m        __   _ __      _  __\e[0m\n");
