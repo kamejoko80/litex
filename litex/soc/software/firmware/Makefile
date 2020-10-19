@@ -13,7 +13,7 @@ endif
 # Distinguish platform name.
 CPUFLAGS += -D$(PLATFORM)
 
-OBJECTS=isr.o sdcard.o main.o boot-helper-$(CPU).o
+OBJECTS = ads126x.o isr.o sdcard.o main.o boot-helper-$(CPU).o
 
 all: firmware.bin
 
