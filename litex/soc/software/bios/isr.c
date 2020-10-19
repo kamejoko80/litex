@@ -8,7 +8,25 @@
 #include <uart.h>
 #include <stdio.h>
 
- 
+#ifdef SPI_DMA_INTERRUPT
+extern void spi_dma_irq(void);
+void spi_dma_interrupt(void);
+void spi_dma_interrupt(void)
+{
+  unsigned int status;
+
+  status = spi_dma_ev_pending_read();
+
+  if( status & 1 )
+  {
+    spi_dma_irq();
+    spi_dma_ev_pending_write(1);
+  }
+
+  spi_dma_ev_enable_write(1);
+}
+#endif
+
 #if defined(__blackparrot__) /*TODO: Update this function for BP*/ //
 
 void isr(void);
@@ -21,7 +39,7 @@ void isr(void)
     onetime++;
   }
 }
-#elif defined(__rocket__) 
+#elif defined(__rocket__)
 void plic_init(void);
 void plic_init(void)
 {
@@ -73,5 +91,11 @@ void isr(void)
 	if(irqs & (1 << UART_INTERRUPT))
 		uart_isr();
 #endif
+
+#ifdef SPI_DMA_INTERRUPT
+  if(irqs & (1 << SPI_DMA_INTERRUPT))
+    spi_dma_interrupt();
+#endif
+
 }
 #endif
