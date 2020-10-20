@@ -28,6 +28,7 @@
 #include <generated/git.h>
 
 #include "sdcard.h"
+#include "ads126x.h"
 
 /* General address space functions */
 
@@ -148,10 +149,16 @@ int main(int i, char **c)
     spidma_test();
 #endif
 
-#ifdef CSR_SPI_ARRAY_BASE
-    spi_array_test(0xAA);
-    spi_array_test(0x55);
-#endif
+    ads126x_init();
+    ads126x_select_chip(ADS126X_CHIP0);
+    ads126x_read_adc_data(0);
+    ads126x_deselect_chip();
+    ads126x_print_adc_data();
+
+    ads126x_select_chip(ADS126X_CHIP0);
+    ads126x_read_adc_data(0);
+    ads126x_deselect_chip();
+    ads126x_print_adc_data();
 
     while(1);
 
