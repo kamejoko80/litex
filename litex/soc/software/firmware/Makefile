@@ -32,7 +32,7 @@ firmware.elf: $(FIRMWARE_DIRECTORY)/linker.ld $(OBJECTS)
 
 
 %.elf: ../libbase/crt0-$(CPU)-ctr.o ../libnet/libnet.a ../libbase/libbase-nofloat.a ../libcompiler_rt/libcompiler_rt.a
-	$(LD) $(LDFLAGS) -T $(FIRMWARE_DIRECTORY)/linker.ld -N -o $@ \
+	$(LD) $(LDFLAGS) -T $(FIRMWARE_DIRECTORY)/linker.ld -Map firmware.map -N -o $@ \
 		../libbase/crt0-$(CPU)-ctr.o \
 		$(OBJECTS) \
 		-L../libnet \
