@@ -375,7 +375,7 @@ void netboot(void)
 #define FIRMWARE_BASE_ADDRESS MAIN_RAM_BASE
 #else
 /* Firmware code starts after (a) length and (b) CRC -- both unsigned ints */
-#define FIRMWARE_BASE_ADDRESS (FLASH_BOOT_ADDRESS + 2 * sizeof(unsigned int))
+#define FIRMWARE_BASE_ADDRESS (FLASH_BOOT_ADDRESS + FIRMWARE_IMAGE_FLASH_OFFSET + 2 * sizeof(unsigned int))
 #endif
 
 static unsigned int check_image_in_flash(unsigned int base_address)
